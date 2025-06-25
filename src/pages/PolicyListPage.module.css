@@ -1,0 +1,17 @@
+/* This imports all the shared header, grid, and dropdown styles */
+@import "./AgentListPage.module.css";
+
+/* --- ADD THIS NEW STYLE --- */
+/* This style is for the message when no policies are found */
+.noDataCell {
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  /* grid-column: span ALL; is not a valid property, so we set it in the JSX */
+}
+
+/* This class name helps to scope the fadeIn animation if needed */
+.policyPage {
+  animation: fadeIn 0.5s ease-in-out;
+}

@@ -1,0 +1,19 @@
+.dashboardLayout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7f9fc; /* A light, clean background */
+}
+
+.mainContent {
+  flex-grow: 1;
+  padding: 2rem;
+  margin-left: 240px; /* This must match the width of your sidebar */
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
