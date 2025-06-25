@@ -1,240 +1,227 @@
-Main card container
+/* /* Main card container / */
 .login-card {
-  display: flex;
-  width: 100%;
-  max-width: 900px;
-  min-height: 600px; /* Increased height for better proportions */
-  background-color: #fff;
-  border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  position: relative; /* Needed for positioning pseudo-elements */
+display: flex;
+width: 100%;
+max-width: 900px;
+min-height: 600px; 
+background-color: #fff;
+border-radius: 24px;
+box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+overflow: hidden;
+position: relative; 
 }
-
-/* --- Left Blue "Welcome" Panel --- */
+/* --- Left Blue "Welcome" Panel ---  */
 .welcome-panel {
-  flex: 1;
-  background: #0071e3; /* A solid, vibrant blue */
-  color: #fff;
-  padding: 50px 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative; /* Crucial for positioning the spheres */
-  overflow: hidden; /* Clips the spheres nicely */
+flex: 1;
+background: #0071e3; 
+color: #fff;
+padding: 50px 40px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+position: relative; 
+overflow: hidden; 
 }
-
 /* This new wrapper ensures text is on top of the spheres */
 .welcome-content {
-  position: relative;
-  z-index: 2;
+position: relative;
+z-index: 2;
 }
-
 .welcome-panel h2 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 10px;
+font-size: 2.5rem;
+font-weight: 800;
+margin-bottom: 10px;
 }
 .welcome-panel h3 {
-  font-size: 1rem;
-  font-weight: 300;
-  letter-spacing: 2px;
-  margin-bottom: 30px;
-  opacity: 0.8;
+font-size: 1rem;
+font-weight: 300;
+letter-spacing: 2px;
+margin-bottom: 30px;
+opacity: 0.8;
 }
 .welcome-panel p {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  opacity: 0.9;
+font-size: 0.9rem;
+line-height: 1.6;
+opacity: 0.9;
 }
-
-
-/* --- THE DECORATIVE SPHERES --- */
-/* We use ::before and ::after to create the two circles */
+/* --- THE DECORATIVE SPHERES --- /
+/ We use ::before and ::after to create the two circles */
 .welcome-panel::before,
 .welcome-panel::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15), rgba(255,255,255,0));
-  z-index: 1;
+content: '';
+position: absolute;
+border-radius: 50%;
+background: radial-gradient(circle, rgba(255,255,255,0.15), rgba(255,255,255,0));
+z-index: 1;
 }
-
 /* Big circle */
 .welcome-panel::before {
-  width: 250px;
-  height: 250px;
-  bottom: -125px;
-  left: -50px;
+width: 250px;
+height: 250px;
+bottom: -125px;
+left: -50px;
 }
-
 /* Small circle */
 .welcome-panel::after {
-  width: 150px;
-  height: 150px;
-  bottom: 80px;
-  right: -75px;
+width: 150px;
+height: 150px;
+bottom: 80px;
+right: -75px;
 }
 
-
-/* --- Right White Form Panel --- */
 .form-panel {
-  flex: 1.2;
-  padding: 40px 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative; /* Crucial for the "scoop" effect */
+flex: 1.2;
+padding: 40px 50px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+position: relative; 
 }
 
 
-/* --- THE "SCOOP" OR "CURVE CUT" --- */
-/* This pseudo-element creates the blue curve that cuts into the white panel */
 .form-panel::before {
-  content: '';
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background: #0071e3; /* Must match the welcome panel's color */
-  border-radius: 50%;
-  top: 500px;   /* Half the height, pulls it up */
-  left: 400px;  /* Half the width, pulls it left */
+content: '';
+position: absolute;
+width: 200px;
+height: 200px;
+background: #0071e3;
+border-radius: 50%;
+top: 500px;   
+left: 400px;  
 }
-
-
 .form-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
+font-size: 2rem;
+font-weight: 700;
+color: #333;
 }
 .form-subtitle {
-  font-size: 0.9rem;
-  color: #888;
-  margin-bottom: 30px;
+font-size: 0.9rem;
+color: #888;
+margin-bottom: 30px;
 }
 .input-group {
-  position: relative;
-  margin-bottom: 5px;
+position: relative;
+margin-bottom: 5px;
 }
 .input-icon {
-  position: absolute;
-  top: 50%;
-  left: 15px;
-  transform: translateY(-50%);
-  color: #aaa;
+position: absolute;
+top: 50%;
+left: 15px;
+transform: translateY(-50%);
+color: #aaa;
 }
 .form-control {
-  width: 100%;
-  padding: 12px 15px 12px 45px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: #f9f9f9;
+width: 100%;
+padding: 12px 15px 12px 45px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 1rem;
+background-color: #f9f9f9;
 }
 .form-control:focus {
-  outline: none;
-  border-color: #007bff;
-  background-color: #fff;
+outline: none;
+border-color: #007bff;
+background-color: #fff;
 }
 .show-hide-btn {
-  position: absolute;
-  top: 50%;
-  right: 15px;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #007bff;
-  font-weight: 600;
-  font-size: 0.8rem;
+position: absolute;
+top: 50%;
+right: 15px;
+transform: translateY(-50%);
+background: none;
+border: none;
+cursor: pointer;
+color: #007bff;
+font-weight: 600;
+font-size: 0.8rem;
 }
 .error-message {
-  color: #e53e3e;
-  font-size: 0.8rem;
-  height: 1rem;
-  margin-bottom: 5px;
+color: #e53e3e;
+font-size: 0.8rem;
+height: 1rem;
+margin-bottom: 5px;
 }
 .general-error {
-  text-align: center;
+text-align: center;
 }
 .form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 15px;
-  margin-bottom: 25px;
-  font-size: 0.85rem;
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 15px;
+margin-bottom: 25px;
+font-size: 0.85rem;
 }
 .remember-me {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: #666;
+display: flex;
+align-items: center;
+gap: 8px;
+cursor: pointer;
+color: #666;
 }
 .forgot-password {
-  color: #007bff;
-  text-decoration: none;
+color: #007bff;
+text-decoration: none;
 }
 .button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+display: flex;
+flex-direction: column;
+gap: 15px;
 }
 .submit-btn, .secondary-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+width: 100%;
+padding: 12px;
+border-radius: 8px;
+font-size: 1rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.2s ease;
 }
 .submit-btn {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
+background-color: #007bff;
+color: #fff;
+border: none;
 }
 .submit-btn:hover:not(:disabled) {
-  background-color: #0056b3;
+background-color: #0056b3;
 }
 .secondary-btn {
-  background-color: #fff;
-  color: #555;
-  border: 1px solid #ddd;
+background-color: #fff;
+color: #555;
+border: 1px solid #ddd;
 }
 .secondary-btn:hover {
-  background-color: #f5f5f5;
+background-color: #f5f5f5;
 }
 .signup-link {
-  text-align: center;
-  margin-top: 25px;
-  font-size: 0.9rem;
-  color: #666;
+text-align: center;
+margin-top: 25px;
+font-size: 0.9rem;
+color: #666;
 }
 .signup-link a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 600;
+color: #007bff;
+text-decoration: none;
+font-weight: 600;
+}
+ /* --- Responsive Media Query --- / */
+@media (max-width: 850px) {
+
+.login-card {
+flex-direction: column;
+min-height: auto;
+max-width: 450px;
+margin: 20px 0;
+}
+.welcome-panel {
+border-radius: 24px 24px 0 0;
+min-height: 250px; 
+}
+.form-panel {
+padding: 30px;
 }
 
-/* --- Responsive Media Query --- */
-@media (max-width: 850px) {
-  .login-card {
-    flex-direction: column;
-    min-height: auto;
-    max-width: 450px;
-    margin: 20px 0; /* Add margin on mobile */
-  }
-  .welcome-panel {
-    border-radius: 24px 24px 0 0;
-    min-height: 250px; /* Give it some height */
-  }
-  .form-panel {
-    padding: 30px;
-  }
-  /* The scoop is not needed on the stacked mobile view */
-  .form-panel::before {
-    display: none;
-  }
+.form-panel::before {
+display: none;
+}
 }
