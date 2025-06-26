@@ -1,19 +1,21 @@
 import apiClient from './apiClient';
 
-const POLICY_API_PREFIX = '/policies/'; // Make sure this matches your main_api.py prefix
+// The prefix for your policy router in main_api.py
+const POLICY_API_PREFIX = '/policies/';
 
 /**
- * Fetches a list of policies filtered by the agent's UUID.
- * Corresponds to your `handle_read_policy_records` endpoint.
- * @param {string} agentId - The UUID of the agent.
+ * --- THIS IS THE FUNCTION WE WILL USE ---
+ * Fetches policies by the agent's ASSET ID. This corresponds to the
+ * `resource_acronis_id` query parameter in your FastAPI endpoint.
+ *
+ * @param {string} assetId - The `asset_id` from an agent object.
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const getPoliciesByAgent = (agentId) => {
+export const getPoliciesByAssetId = (assetId) => {
   return apiClient.get(POLICY_API_PREFIX, {
     params: {
-      agent_id: agentId,
+      // This key MUST match the query parameter name in your routers/policy.py
+      resource_acronis_id: assetId,
     }
   });
 };
-
-// You can add other policy-related functions here later

@@ -17,7 +17,7 @@ const allAgentColumns = [
 ];
 
 const AgentListPage = () => {
-  // All your state and hook logic is perfect and requires no changes
+  // All your state and logic up to the return statement is perfect and needs no changes
   const { tenantUuid } = useParams();
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ const AgentListPage = () => {
 
   return (
     <div className={styles.agentPage}>
-      {/* The header requires no changes */}
+      {/* The header is perfect and needs no changes */}
       <header className={styles.header}>
         <div className={styles.titleContainer}>
           <Link to="/app/clients" className={styles.backButton}>
@@ -107,7 +107,6 @@ const AgentListPage = () => {
       </header>
       
       <div className={styles.gridContainer}>
-        {/* The grid layout requires no changes */}
         <div className={styles.grid} style={{ gridTemplateColumns: `minmax(200px, 1.5fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
           <div className={styles.gridHeader}>Policies</div>
@@ -124,14 +123,22 @@ const AgentListPage = () => {
                 </div>
               ))}
               <div className={styles.gridCell}>
-                {/* --- THIS IS THE ONLY CHANGE --- */}
-                {/* Replace the button with a Link that navigates to the policy page */}
-                <Link
-                  to={`/app/agents/${agent.agent_id}/policies`}
-                  className={styles.actionButton}
-                >
-                  View Policies
-                </Link>
+                {/* --- THIS IS THE KEY CHANGE --- */}
+                {/* We now link to a new URL using the agent's asset_id, not its agent_id. */}
+                {/* We also pass the assetname in the link's state for the next page to use. */}
+                {agent.asset_id ? (
+                  <Link
+                    to={`/app/assets/${agent.asset_id}/policies`}
+                    state={{ assetName: agent.assetname }}
+                    className={styles.actionButton}
+                  >
+                    View Policies
+                  </Link>
+                ) : (
+                  <button className={styles.actionButtonDisabled} disabled>
+                    No Asset
+                  </button>
+                )}
               </div>
             </React.Fragment>
           ))}

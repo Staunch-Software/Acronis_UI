@@ -53,8 +53,8 @@ function App() {
 
           {/* --- Step 2: Add the new, specific route for an agent's policies --- */}
           {/* This dynamic route will match URLs like "/app/agents/some-agent-uuid-456/policies" */}
-          <Route 
-            path="agents/:agentId/policies" 
+         <Route 
+            path="assets/:assetId/policies" 
             element={<PolicyListPage />} 
           />
         </Route>
@@ -66,4 +66,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

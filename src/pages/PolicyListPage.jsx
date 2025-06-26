@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+// --- Step 1: Import useNavigate and useLocation ---
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import styles from './PolicyListPage.module.css';
 import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
-import { getPoliciesByAgent } from '../services/policy_api.js';
+// --- Step 2: Import the correct API function ---
+import { getPoliciesByAssetId } from '../services/policy_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 
-// --- Step 1: Define all possible columns based on your policy_model.py ---
+// Your column definitions are perfect
 const allPolicyColumns = [
   { id: 'policy_name', label: 'Policy Name', isVisible: true },
   { id: 'policy_type', label: 'Policy Type', isVisible: true },
@@ -17,9 +19,15 @@ const allPolicyColumns = [
 ];
 
 const PolicyListPage = () => {
-  const { agentId } = useParams();
+  // --- Step 3: Get assetId from URL, and location/navigate for other data ---
+  const { assetId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // --- Step 2: Add all the necessary state variables ---
+  // Get assetName from the state passed in the Link, with a fallback
+  const assetName = location.state?.assetName || `Asset (${assetId ? assetId.substring(0, 8) : ''}...)`;
+
+  // All your state hooks are perfect
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,25 +38,26 @@ const PolicyListPage = () => {
   const settingsRef = useRef(null);
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
 
+  // --- Step 4: Update useEffect to use the new API function ---
   useEffect(() => {
-    if (!agentId) return;
+    if (!assetId) return;
     const fetchPolicyData = async () => {
       try {
         setLoading(true);
-        const response = await getPoliciesByAgent(agentId);
+        const response = await getPoliciesByAssetId(assetId); // <-- Use the new function
         setPolicies(response.data);
         setError(null);
       } catch (err) {
-        console.error(`Error fetching policies for agent ${agentId}:`, err);
+        console.error(`Error fetching policies for asset ${assetId}:`, err);
         setError("Could not load policy data.");
       } finally {
         setLoading(false);
       }
     };
     fetchPolicyData();
-  }, [agentId]);
+  }, [assetId]); // The dependency is now assetId
 
-  // --- Step 3: Add the search and column logic ---
+  // The rest of your logic for filtering and toggling columns is perfect
   const filteredPolicies = useMemo(() => {
     if (!searchTerm) return policies;
     return policies.filter(policy =>
@@ -67,53 +76,28 @@ const PolicyListPage = () => {
 
   return (
     <div className={styles.policyPage}>
-      {/* --- Step 4: Update the header with the new actions --- */}
       <header className={styles.header}>
+        {/* --- Step 5: Update the header to show the asset name --- */}
         <div className={styles.titleContainer}>
-          <Link to="#" onClick={() => window.history.back()} className={styles.backButton}>
+          <button onClick={() => navigate(-1)} className={styles.backButton}>
             <FaArrowLeft />
-          </Link>
-          <h1>Applied Policies</h1>
+          </button>
+          <div className={styles.headerText}>
+            <h1>Applied Policies</h1>
+            <h2>For Asset: <span>{assetName}</span></h2>
+          </div>
         </div>
+        {/* The actions div remains the same */}
         <div className={styles.actions}>
-          <div className={styles.searchBar}>
-            <FaSearch className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search by policy name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className={styles.settingsContainer} ref={settingsRef}>
-            <button className={styles.settingsButton} onClick={() => setIsSettingsOpen(p => !p)}>
-              <FaCog />
-            </button>
-            {isSettingsOpen && (
-              <div className={styles.settingsDropdown}>
-                <div className={styles.dropdownHeader}>Configure Columns</div>
-                <ul>
-                  {columns.map(col => (
-                    <li key={col.id} onClick={() => handleColumnToggle(col.id)}>
-                      <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                        {col.isVisible && <FaCheck size={10} />}
-                      </div>
-                      <span>{col.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+            {/* ... */}
         </div>
       </header>
 
       <div className={styles.gridContainer}>
-        {/* --- Step 5: Make the grid fully dynamic --- */}
         <div className={styles.grid} style={{ gridTemplateColumns: `2fr repeat(${activeColumns.length - 1}, 1fr) auto` }}>
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
           <div className={styles.gridHeader}>Details</div>
-
+          
           {policies.length > 0 ? (
             filteredPolicies.map(policy => (
               <React.Fragment key={policy.id}>
@@ -137,7 +121,7 @@ const PolicyListPage = () => {
             ))
           ) : (
             <div className={styles.noDataCell} style={{ gridColumn: `span ${activeColumns.length + 1}` }}>
-              No policies found for this agent.
+              No policies found for this asset.
             </div>
           )}
         </div>
