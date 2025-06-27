@@ -10,6 +10,7 @@ import AgentListPage from './pages/AgentListPage.jsx';
 
 // --- Step 1: Import the new PolicyListPage component ---
 import PolicyListPage from './pages/PolicyListPage.jsx'; // We will create this file
+import EventHistoryPage from './pages/EventHistoryPage.jsx'; 
 
 // Your placeholder pages
 const AgentsPage = () => <h1>Agents Page</h1>;
@@ -57,8 +58,12 @@ function App() {
             path="assets/:assetId/policies" 
             element={<PolicyListPage />} 
           />
+          <Route 
+            path="assets/:assetId/policies/:policyId/log" 
+            element={<EventHistoryPage />} 
+          />
         </Route>
-
+        
         {/* Your fallback route is perfect */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

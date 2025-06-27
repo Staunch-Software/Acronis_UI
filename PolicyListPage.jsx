@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-// --- Step 1: Add useLocation to your imports ---
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import styles from './PolicyListPage.module.css';
 import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
 import { getPoliciesByAssetId } from '../services/policy_api.js';
@@ -8,12 +7,12 @@ import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import PolicyRow from '../components/PolicyRow.jsx';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
-// Your column definitions are perfect
+// Add the 'latest_event_type_name' to your columns
 const allPolicyColumns = [
   { id: 'policy_name', label: 'Policy Name', isVisible: true },
   { id: 'policy_type', label: 'Policy Type', isVisible: true },
   { id: 'policy_enabled', label: 'Enabled', isVisible: true },
-  { id: 'latest_event_type_name', label: 'Last Event Status', isVisible: true },
+  { id: 'latest_event_type_name', label: 'Status', isVisible: true },
   { id: 'policy_updated_at', label: 'Last Updated', isVisible: false },
   { id: 'policy_acronis_id', label: 'Policy UUID', isVisible: false },
   { id: 'resource_name', label: 'Resource Name', isVisible: false },
@@ -21,26 +20,20 @@ const allPolicyColumns = [
 ];
 
 const PolicyListPage = () => {
-  // All your state and hook calls are correct
   const { assetId } = useParams();
   const navigate = useNavigate();
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
-  
-  // --- Step 2: Define `location` and `assetName` at the top level of the component ---
-  const location = useLocation();
-  const assetName = location.state?.assetName || `ID ${assetId ? assetId.substring(0,8) : ''}...`;
-
-  // Your custom hooks are used correctly
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
-  const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allPolicyColumns);
-  
-  // Your useEffect for fetching data is perfect
+
+const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allPolicyColumns);
   useEffect(() => {
+    // This hook ONLY fetches the base list of policies.
     if (!assetId) return;
     const fetchPolicyData = async () => {
       try {
@@ -63,7 +56,7 @@ const PolicyListPage = () => {
     fetchPolicyData();
   }, [assetId]);
 
-  // Your search filtering logic is perfect
+  // This search logic works on the base policy data
   const filteredPolicies = useMemo(() => {
     if (!searchTerm) return policies;
     return policies.filter(policy =>
@@ -71,7 +64,11 @@ const PolicyListPage = () => {
     );
   }, [policies, searchTerm]);
 
-  // Loading and error states are perfect
+  // This column toggle logic is correct
+  
+
+ 
+
   if (loading) return <div className={styles.centeredMessage}>Loading Policies...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
@@ -84,8 +81,7 @@ const PolicyListPage = () => {
           </button>
           <div className={styles.headerText}>
             <h1>Applied Policies</h1>
-            {/* The `assetName` variable is now correctly defined and accessible here */}
-            <h2>For Asset: <span>{assetName}</span></h2>
+            <h2>For Asset: <span>{location.state?.assetName || `ID ${assetId.substring(0,8)}...`}</span></h2>
           </div>
         </div>
         <div className={styles.actions}>
@@ -107,7 +103,10 @@ const PolicyListPage = () => {
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
                   {columns.map(col => {
+                    // --- THIS IS THE FIX ---
+                    // We define `isDisabled` right here inside the loop, before we use it.
                     const isDisabled = isMaxColumnsReached && !col.isVisible;
+
                     return (
                       <li
                         key={col.id}
@@ -130,20 +129,20 @@ const PolicyListPage = () => {
 
       <div className={styles.gridContainer}>
         <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${activeColumns.length}, 1fr) auto` }}>
+          {/* Render headers based on active columns */}
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
           <div className={styles.gridHeader}>Details</div>
           
           {policies.length > 0 ? (
             filteredPolicies.map(policy => (
-              // --- Step 3: The `assetName` prop is now correctly defined and can be passed ---
+              // Use the PolicyRow component, passing the policy and active columns
               <PolicyRow
-    key={policy.policy_acronis_id}
-    policy={policy}
-    activeColumns={activeColumns}
-    // Pass the assetId and assetName down to each row
-    assetId={assetId}
-    assetName={assetName}
-  />
+                key={policy.policy_acronis_id}
+                policy={policy}
+                activeColumns={activeColumns}
+                assetId={assetId} 
+                assetName={assetName} 
+              />
             ))
           ) : (
             <div className={styles.noDataCell} style={{ gridColumn: `span ${activeColumns.length + 1}` }}>

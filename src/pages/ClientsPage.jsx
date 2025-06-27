@@ -4,6 +4,7 @@ import styles from './ClientsPage.module.css';
 import { FaCog, FaSearch, FaCheck } from 'react-icons/fa';
 import { getTenants } from '../services/tenant_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
+import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
 const allColumns = [
   { id: 'name', label: 'Tenant Name', isVisible: true },
@@ -20,8 +21,8 @@ const ClientsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [columns, setColumns] = useState(allColumns);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+ const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allColumns);
 
   const settingsRef = useRef(null);
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
@@ -48,14 +49,11 @@ const ClientsPage = () => {
     return tenants.filter(tenant => tenant.name?.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [tenants, searchTerm]);
 
-  const handleColumnToggle = (columnId) => {
-    setColumns(prev => prev.map(col => col.id === columnId ? { ...col, isVisible: !col.isVisible } : col));
-  };
+  
   
   if (loading) return <div className={styles.centeredMessage}>Loading...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
-  const activeColumns = columns.filter(col => col.isVisible);
 
   return (
     <div className={styles.clientsPage}>
@@ -88,14 +86,24 @@ const ClientsPage = () => {
               <div className={styles.settingsDropdown}>
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
-                  {columns.map(col => (
-                    <li key={col.id} onClick={() => handleColumnToggle(col.id)}>
-                      <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                        {col.isVisible && <FaCheck size={10} />}
-                      </div>
-                      <span>{col.label}</span>
-                    </li>
-                  ))}
+                 {columns.map(col => {
+                                     // --- THIS IS THE FIX ---
+                                     // We define `isDisabled` right here inside the loop, before we use it.
+                                     const isDisabled = isMaxColumnsReached && !col.isVisible;
+                 
+                                     return (
+                                       <li
+                                         key={col.id}
+                                         className={isDisabled ? styles.disabled : ''}
+                                         onClick={() => handleColumnToggle(col.id)}
+                                       >
+                                         <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
+                                           {col.isVisible && <FaCheck size={10} />}
+                                         </div>
+                                         <span>{col.label}</span>
+                                       </li>
+                                     );
+                                   })}
                 </ul>
               </div>
             )}

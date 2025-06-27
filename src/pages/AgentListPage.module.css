@@ -187,3 +187,21 @@
 .errorMessage {
   color: #dc3545;
 }
+
+/* Style for the disabled list item */
+.settingsDropdown li.disabled {
+  color: #8b8c8f; /* Muted text color */
+  cursor: not-allowed; /* Show a "not allowed" cursor on hover */
+  background-color: #f7fafc; /* A slightly different background */
+  opacity: 0.7; /* Make it slightly transparent */
+}
+
+/* We can also prevent the hover effect on disabled items */
+.settingsDropdown li.disabled:hover {
+  background-color: #f7fafc; /* Keep the same background, no change */
+}
+
+/* Optional: Style the checkbox differently when its parent is disabled */
+.settingsDropdown li.disabled .checkbox {
+  border-color: #e2e8f0;
+}

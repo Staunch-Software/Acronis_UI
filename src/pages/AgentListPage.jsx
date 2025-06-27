@@ -4,6 +4,7 @@ import styles from './AgentListPage.module.css';
 import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
 import { getAgentsByTenant } from '../services/agent_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
+import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
 // Your column definitions are perfect
 const allAgentColumns = [
@@ -23,8 +24,8 @@ const AgentListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [columns, setColumns] = useState(allAgentColumns);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+ const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allAgentColumns);
 
   const settingsRef = useRef(null);
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
@@ -54,11 +55,8 @@ const AgentListPage = () => {
     );
   }, [agents, searchTerm]);
 
-  const handleColumnToggle = (columnId) => {
-    setColumns(prev => prev.map(col => col.id === columnId ? { ...col, isVisible: !col.isVisible } : col));
-  };
+  
 
-  const activeColumns = columns.filter(col => col.isVisible);
 
   if (loading) return <div className={styles.centeredMessage}>Loading Agents...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
@@ -91,14 +89,24 @@ const AgentListPage = () => {
               <div className={styles.settingsDropdown}>
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
-                  {columns.map(col => (
-                    <li key={col.id} onClick={() => handleColumnToggle(col.id)}>
-                      <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                        {col.isVisible && <FaCheck size={10} />}
-                      </div>
-                      <span>{col.label}</span>
-                    </li>
-                  ))}
+                  {columns.map(col => {
+                                                       // --- THIS IS THE FIX ---
+                                                       // We define `isDisabled` right here inside the loop, before we use it.
+                                                       const isDisabled = isMaxColumnsReached && !col.isVisible;
+                                   
+                                                       return (
+                                                         <li
+                                                           key={col.id}
+                                                           className={isDisabled ? styles.disabled : ''}
+                                                           onClick={() => handleColumnToggle(col.id)}
+                                                         >
+                                                           <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
+                                                             {col.isVisible && <FaCheck size={10} />}
+                                                           </div>
+                                                           <span>{col.label}</span>
+                                                         </li>
+                                                       );
+                                                     })}
                 </ul>
               </div>
             )}
