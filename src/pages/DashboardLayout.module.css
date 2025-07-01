@@ -1,19 +1,34 @@
 .dashboardLayout {
   display: flex;
   min-height: 100vh;
-  background-color: #f7f9fc; /* A light, clean background */
+  background-color: #f7f9fc;
+  position: relative;
 }
 
+/* Main content area */
 .mainContent {
   flex-grow: 1;
   padding: 2rem;
-  margin-left: 240px; /* This must match the width of your sidebar */
+  margin-left: 240px; /* Matches sidebar width */
 }
 
-/* Responsive styles for mobile */
+.toggleButton {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1100;
+  background: #09042e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.3rem;
+  font-size: 1.2rem;
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .mainContent {
-    margin-left: 0;
-    padding: 1rem;
+  .toggleButton {
+    display: block;
   }
 }
+

@@ -193,3 +193,39 @@
 .settingsDropdown li.disabled .checkbox {
   border-color: #e2e8f0;
 }
+/* Base styles are assumed to be desktop-first */
+
+/* For screens up to 520px wide (mobile devices) */
+@media (max-width: 520px) {
+  .grid {
+    display: block; /* Disable grid layout on mobile */
+  }
+
+  .gridHeader {
+    display: none; /* Hide table headers on mobile */
+  }
+
+  .gridCell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+    background-color: #fff;
+  }
+
+  .gridCell::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    flex-basis: 40%;
+  }
+
+  .actionButton {
+    margin-top: 0.5rem;
+    width: 100%;
+    text-align: center;
+  }
+}
+

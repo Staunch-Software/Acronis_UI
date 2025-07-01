@@ -1,14 +1,22 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom'; // Outlet is a placeholder for the child page
-import Sidebar from '../components/Sidebar.jsx'; // We will create this next
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Sidebar from '../components/Sidebar.jsx';
 import styles from './DashboardLayout.module.css';
+import { FaBars } from 'react-icons/fa';
 
 const DashboardLayout = () => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+console.log("Sidebar Open:", isSidebarOpen);
   return (
     <div className={styles.dashboardLayout}>
-      <Sidebar />
+      {/* Mobile toggle button */}
+      <button className={styles.toggleButton} onClick={() => setSidebarOpen(prev => !prev)}>
+        <FaBars />
+      </button>
+
+      <Sidebar isOpen={isSidebarOpen} />
+
       <main className={styles.mainContent}>
-        {/* The current page (Clients, Agents, etc.) will be rendered here */}
         <Outlet />
       </main>
     </div>

@@ -120,7 +120,7 @@ const ClientsPage = () => {
           {filteredTenants.map(tenant => (
             <React.Fragment key={tenant.tenant_uuid}>
               {activeColumns.map(col => (
-                <div key={col.id} className={styles.gridCell}>
+                <div key={col.id} className={styles.gridCell} data-label={col.label}>
                   {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
                    col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
                    ( tenant[col.id] || 'N/A' )}

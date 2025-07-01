@@ -9,8 +9,8 @@ const EventHistoryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const assetName = location.state?.assetName || `Asset (${assetId ? assetId.substring(0, 8) : ''}...)`;
-  const policyName = location.state?.policyName || `Policy (${policyId ? policyId.substring(0, 8) : ''}...)`;
+  const assetName = location.state?.assetName || '...';
+  const policyName = location.state?.policyName || '...';
 
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +21,7 @@ const EventHistoryPage = () => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
+        // This is the new, unambiguous API call
         const response = await getEventHistoryForPolicyOnAsset(policyId, assetId);
         setHistory(response.data);
         setError(null);
