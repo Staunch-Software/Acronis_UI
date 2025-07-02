@@ -118,21 +118,25 @@ const ClientsPage = () => {
           <div className={styles.gridHeader}>Actions</div>
 
           {filteredTenants.map(tenant => (
-            <React.Fragment key={tenant.tenant_uuid}>
-              {activeColumns.map(col => (
-                <div key={col.id} className={styles.gridCell} data-label={col.label}>
-                  {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
-                   col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
-                   ( tenant[col.id] || 'N/A' )}
-                </div>
-              ))}
-              <div className={styles.gridCell}>
-                <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
-                  View Agents
-                </Link>
-              </div>
-            </React.Fragment>
-          ))}
+  <div key={tenant.tenant_uuid} className={styles.gridRow}>
+    {activeColumns.map(col => (
+      <div key={col.id} className={styles.gridCell} data-label={col.label}>
+        <span>
+          {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
+           col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
+           ( tenant[col.id] || 'N/A' )}
+        </span>
+      </div>
+    ))}
+    <div className={styles.gridCell} data-label="Actions">
+      <span>
+        <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
+          View Agents
+        </Link>
+      </span>
+    </div>
+  </div>
+))}
         </div>
       </div>
     </div>

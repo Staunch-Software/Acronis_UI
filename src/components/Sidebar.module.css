@@ -10,6 +10,7 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
+  transition: transform 0.3s ease;
 }
 .logoContainer {
   padding: 1.5rem;
@@ -77,6 +78,12 @@
   }
 }
 
+@media (min-width: 769px) {
+  .sidebar {
+    position: static;
+    transform: translateX(0);
+  }
+}
 @media (max-width: 768px) {
   /* Default sidebar styles */
 .sidebar {
@@ -90,18 +97,10 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
-  transition: transform 0.3s ease-in-out;
+ transform: translateX(-100%);
 }
-
-/* Mobile hidden state (default) */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%); /* hidden by default */
-  }
-
   .sidebar.open {
     transform: translateX(0); /* show when open */
   }
-}
 
 }

@@ -16,7 +16,8 @@ console.log("Sidebar Open:", isSidebarOpen);
 
       <Sidebar isOpen={isSidebarOpen} />
 
-      <main className={styles.mainContent}>
+      <main className={`${styles.mainContent} ${isSidebarOpen ? styles.shifted : ''}`}>
+
         <Outlet />
       </main>
     </div>

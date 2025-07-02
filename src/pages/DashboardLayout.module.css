@@ -2,16 +2,32 @@
   display: flex;
   min-height: 100vh;
   background-color: #f7f9fc;
-  position: relative;
 }
 
-/* Main content area */
+/* Sidebar assumed to be 240px wide */
+
+/* Main Content Styling */
 .mainContent {
   flex-grow: 1;
   padding: 2rem;
-  margin-left: 240px; /* Matches sidebar width */
+  transition: margin-left 0.3s ease;
 }
 
+/* Desktop: add left margin only when sidebar is open */
+@media (min-width: 769px) {
+  .mainContent.shifted {
+    margin-left: 240px;
+  }
+}
+
+/* Mobile: never add left margin */
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 0 !important;
+  }
+}
+
+/* Toggle Button */
 .toggleButton {
   position: fixed;
   top: 1rem;
@@ -26,9 +42,9 @@
   display: none;
 }
 
+/* Show toggle on mobile only */
 @media (max-width: 768px) {
   .toggleButton {
     display: block;
   }
 }
-

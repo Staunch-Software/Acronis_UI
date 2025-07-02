@@ -36,3 +36,8 @@
 .settingsDropdown li.disabled .checkbox {
   border-color: #e2e8f0;
 }
+/* Add this to the end of your PolicyListPage.module.css */
+.loadingText {
+  color: #a0aec0; /* A muted gray color */
+  font-style: italic;
+}

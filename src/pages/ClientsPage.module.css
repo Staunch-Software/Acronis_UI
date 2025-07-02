@@ -119,6 +119,9 @@
   gap: 1rem 2rem;
   min-width: 900px;
 }
+.gridRow {
+  display: contents;
+}
 .gridHeader {
   padding: 1rem 1.5rem;
   font-size: 0.75rem;
@@ -199,10 +202,24 @@
 @media (max-width: 520px) {
   .grid {
     display: block; /* Disable grid layout on mobile */
+    min-width: 0;   /* Remove desktop min-width */
+    gap: 0;         /* Remove grid gap */
   }
 
   .gridHeader {
     display: none; /* Hide table headers on mobile */
+  }
+  .gridRow {
+    display: block; /* IMPORTANT: Override 'display: contents' */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
+  .gridRow:last-child {
+    margin-bottom: 0;
   }
 
   .gridCell {
@@ -213,8 +230,12 @@
     border-bottom: 1px solid #eee;
     font-size: 0.9rem;
     background-color: #fff;
+    white-space: normal; /* Allow text to wrap */
+    gap: 1rem; /* Add space between label and value */
   }
-
+.gridRow .gridCell:last-child {
+    border-bottom: none;
+  }
   .gridCell::before {
     content: attr(data-label);
     font-weight: bold;
@@ -222,10 +243,15 @@
     flex-basis: 40%;
   }
 
+  .gridCell[data-label="Actions"] span {
+    width: 100%;
+  }
+
   .actionButton {
-    margin-top: 0.5rem;
     width: 100%;
     text-align: center;
+    box-sizing: border-box;
+    margin-top: 0; /* remove the old margin */
   }
 }
 
