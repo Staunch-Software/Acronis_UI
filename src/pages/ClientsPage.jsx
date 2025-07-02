@@ -9,7 +9,7 @@ import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 const allColumns = [
   { id: 'name', label: 'Tenant Name', isVisible: true },
   { id: 'status', label: 'Status', isVisible: true },
-  { id: 'contact', label: 'Contact Email', isVisible: true },
+  { id: 'email', label: 'Contact Email', isVisible: true },
   { id: 'tenant_type', label: 'Kind / Type', isVisible: true },
   { id: 'mfa_status', label: '2FA Status', isVisible: false },
   { id: 'tenant_uuid', label: 'Tenant UUID', isVisible: false },

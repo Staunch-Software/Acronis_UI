@@ -2,11 +2,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from './AgentListPage.module.css';
 import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
-import { getAgentsByTenant } from '../services/agent_api.js';
+import { getAgentsByTenantPaginated } from '../services/agent_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
-// Your column definitions are perfect
 const allAgentColumns = [
   { id: 'assetname', label: 'Asset Name', isVisible: true },
   { id: 'agent_status', label: 'Status', isVisible: true },
@@ -17,26 +16,32 @@ const allAgentColumns = [
   { id: 'agent_created_at', label: 'Created On', isVisible: false },
 ];
 
+const AGENTS_PER_PAGE = 50;
+
 const AgentListPage = () => {
-  // All your state and logic up to the return statement is perfect and needs no changes
   const { tenantUuid } = useParams();
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
- const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allAgentColumns);
-
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isMoreLoading, setIsMoreLoading] = useState(false);
+  const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allAgentColumns);
   const settingsRef = useRef(null);
+
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
 
   useEffect(() => {
     if (!tenantUuid) return;
-    const fetchAgentData = async () => {
+    const fetchInitialAgentData = async () => {
       try {
         setLoading(true);
-        const response = await getAgentsByTenant(tenantUuid);
-        setAgents(response.data);
+        const response = await getAgentsByTenantPaginated(tenantUuid, AGENTS_PER_PAGE, 0);
+        setAgents(response.data.items);
+        setHasMore(response.data.items.length < response.data.total);
+        setPage(1);
         setError(null);
       } catch (err) {
         console.error(`Error fetching agents for tenant ${tenantUuid}:`, err);
@@ -45,8 +50,31 @@ const AgentListPage = () => {
         setLoading(false);
       }
     };
-    fetchAgentData();
+    fetchInitialAgentData();
   }, [tenantUuid]);
+
+  const loadMoreAgents = async () => {
+    if (isMoreLoading || !hasMore) return;
+
+    setIsMoreLoading(true);
+    try {
+      const nextPage = page + 1;
+      const skip = page * AGENTS_PER_PAGE;
+      const response = await getAgentsByTenantPaginated(tenantUuid, AGENTS_PER_PAGE, skip);
+      
+      setAgents(prevAgents => [...prevAgents, ...response.data.items]);
+      
+      const loadedCount = agents.length + response.data.items.length;
+      setHasMore(loadedCount < response.data.total);
+      setPage(nextPage);
+
+    } catch (err) {
+      console.error("Error fetching more agents:", err);
+      setError("Could not load more agents.");
+    } finally {
+      setIsMoreLoading(false);
+    }
+  };
 
   const filteredAgents = useMemo(() => {
     if (!searchTerm) return agents;
@@ -55,15 +83,11 @@ const AgentListPage = () => {
     );
   }, [agents, searchTerm]);
 
-  
-
-
   if (loading) return <div className={styles.centeredMessage}>Loading Agents...</div>;
-  if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
+  if (error && agents.length === 0) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
   return (
     <div className={styles.agentPage}>
-      {/* The header is perfect and needs no changes */}
       <header className={styles.header}>
         <div className={styles.titleContainer}>
           <Link to="/app/clients" className={styles.backButton}>
@@ -90,23 +114,20 @@ const AgentListPage = () => {
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
                   {columns.map(col => {
-                                                       // --- THIS IS THE FIX ---
-                                                       // We define `isDisabled` right here inside the loop, before we use it.
-                                                       const isDisabled = isMaxColumnsReached && !col.isVisible;
-                                   
-                                                       return (
-                                                         <li
-                                                           key={col.id}
-                                                           className={isDisabled ? styles.disabled : ''}
-                                                           onClick={() => handleColumnToggle(col.id)}
-                                                         >
-                                                           <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                                                             {col.isVisible && <FaCheck size={10} />}
-                                                           </div>
-                                                           <span>{col.label}</span>
-                                                         </li>
-                                                       );
-                                                     })}
+                    const isDisabled = isMaxColumnsReached && !col.isVisible;
+                    return (
+                      <li
+                        key={col.id}
+                        className={isDisabled ? styles.disabled : ''}
+                        onClick={() => !isDisabled && handleColumnToggle(col.id)}
+                      >
+                        <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
+                          {col.isVisible && <FaCheck size={10} />}
+                        </div>
+                        <span>{col.label}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -131,9 +152,6 @@ const AgentListPage = () => {
                 </div>
               ))}
               <div className={styles.gridCell}>
-                {/* --- THIS IS THE KEY CHANGE --- */}
-                {/* We now link to a new URL using the agent's asset_id, not its agent_id. */}
-                {/* We also pass the assetname in the link's state for the next page to use. */}
                 {agent.asset_id ? (
                   <Link
                     to={`/app/assets/${agent.asset_id}/policies`}
@@ -150,6 +168,20 @@ const AgentListPage = () => {
               </div>
             </React.Fragment>
           ))}
+        </div>
+        
+        <div className={styles.footerActions}>
+          {isMoreLoading && (
+            <div className={styles.centeredMessage}>Loading more...</div>
+          )}
+          {hasMore && !isMoreLoading && (
+            <button onClick={loadMoreAgents} className={styles.loadMoreButton}>
+              Load More Agents
+            </button>
+          )}
+          {!hasMore && agents.length > 0 && (
+             <div className={styles.centeredMessage}>All agents loaded.</div>
+          )}
         </div>
       </div>
     </div>

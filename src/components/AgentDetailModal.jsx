@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './AgentDetailModal.module.css';
-import { getAgentsByTenant } from '../services/agent_api.js';
+import { getAllAgentsByTenant } from '../services/agent_api.js';
 import { FaTimes } from 'react-icons/fa';
 
 const AgentDetailModal = ({ tenant, onClose }) => {
@@ -9,14 +9,13 @@ const AgentDetailModal = ({ tenant, onClose }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // This effect runs whenever the `tenant` prop changes.
     if (!tenant) return;
 
     const fetchAgents = async () => {
       try {
         setLoading(true);
-        const response = await getAgentsByTenant(tenant.tenant_uuid);
-        setAgents(response.data);
+        const response = await getAllAgentsByTenant(tenant.tenant_uuid);
+        setAgents(response.data.items);
         setError(null);
       } catch (err) {
         console.error(`Failed to fetch agents for tenant ${tenant.tenant_uuid}:`, err);
@@ -27,7 +26,7 @@ const AgentDetailModal = ({ tenant, onClose }) => {
     };
 
     fetchAgents();
-  }, [tenant]); // Dependency array ensures this re-runs if a different tenant is selected
+  }, [tenant]);
 
   return (
     <div className={styles.modalOverlay}>
