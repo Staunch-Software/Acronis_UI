@@ -1,48 +1,12 @@
-/* Reuse common styles for a consistent header and page layout */
+/* Reuse common styles for a consistent header */
 @import "./ClientsPage.module.css"; 
 
-/* Specific styles for this page */
-.historyPage {
-  animation: fadeIn 0.5s ease-in-out;
-}
-.headerText h1 span {
-  font-weight: 600;
-  color: #0071e3;
-}
-.headerText h2 {
-  font-size: 1rem;
-  font-weight: 400;
-  color: #718096;
-  margin-top: 0.25rem;
-}
-.logContainer {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.logEntry {
-  display: flex;
-  gap: 1.5rem;
-  padding: 1rem;
-  border-bottom: 1px solid #f0f2f5;
-}
-.logEntry:last-child {
-  border-bottom: none;
-}
-.logTimestamp {
-  font-size: 0.9rem;
-  color: #718096;
-  min-width: 180px;
-  flex-shrink: 0;
-}
-.logType {
-  font-weight: 600;
-  color: #2d3748;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-.logTitle {
-  color: #4a5568;
-  margin: 0;
-}
+.historyPage { animation: fadeIn 0.5s ease-in-out; }
+.headerText h1 span { font-weight: 600; color: #0071e3; }
+.headerText h2 { font-size: 1rem; font-weight: 400; color: #718096; margin-top: 0.25rem; }
+.logContainer { background-color: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.logEntry { display: flex; gap: 1.5rem; padding: 1rem; border-bottom: 1px solid #f0f2f5; }
+.logEntry:last-child { border-bottom: none; }
+.logTimestamp { font-size: 0.9rem; color: #718096; min-width: 180px; flex-shrink: 0; }
+.logType { font-weight: 600; color: #2d3748; display: block; margin-bottom: 0.25rem; }
+.logTitle { color: #4a5568; margin: 0; }

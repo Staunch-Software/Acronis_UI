@@ -4,5 +4,12 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(45deg,#f2f4f7, #eaebec); /* A nice blue gradient */
+  /*background: linear-gradient(45deg,#f2f4f7, #eaebec);  A nice blue gradient */
+  background-image: url('../images/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  position: relative; /* This is essential for the overlay to work */
+  z-index: 1;         /* Establishes a stacking context */
 }

@@ -62,6 +62,7 @@ function App() {
             path="assets/:assetId/policies/:policyId/log" 
             element={<EventHistoryPage />} 
           />
+          <Route path="assets/:assetId/policies/:policyId/log" element={<EventHistoryPage />} />
         </Route>
         
         {/* Your fallback route is perfect */}
@@ -72,3 +73,5 @@ function App() {
 }
 
 export default App; 
+
+

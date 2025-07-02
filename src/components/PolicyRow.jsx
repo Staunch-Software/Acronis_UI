@@ -53,7 +53,7 @@ const PolicyRow = ({ policy, activeColumns, assetId, assetName }) => {
         </div>
       ))}
       <div className={styles.gridCell}>
-       <Link
+        <Link
           to={`/app/assets/${assetId}/policies/${policy.policy_acronis_id}/log`}
           state={{ assetName: assetName, policyName: policy.policy_name }}
           className={styles.actionButton}

@@ -12,12 +12,12 @@ const navItems = [
   { path: '/app/settings', label: 'Settings', Icon: FaCog },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen })  => {
   const location = useLocation();
   const { logout } = useAuth();
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <div className={styles.logoContainer}>
         <Link to="/app/clients" className={styles.logoLink}>
           Acronis
