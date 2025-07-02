@@ -1,20 +1,15 @@
 import axios from 'axios';
 
-// Define the base URL of your FastAPI backend.
-// In a real production app, this would come from an environment variable.
-const API_BASE_URL = 'http://127.0.0.1:8000'; // Or 'http://localhost:8000'
-
 /**
- * A centrally configured axios instance.
- * All other API service files will import and use this client.
- * This is the single place to configure base URLs, headers, and interceptors.
+ * By setting baseURL to an empty string, we make all requests relative.
+ * A request to apiClient.get('/agents/') will go to:
+ * - 'http://localhost:5173/agents/' in development (which we will proxy)
+ * - 'https://your.domain.com/agents/' in production
  */
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '', 
   headers: {
     'Content-Type': 'application/json',
-    // If you add JWT authentication later, you would add the token header here
-    // via an interceptor.
   },
 });
 

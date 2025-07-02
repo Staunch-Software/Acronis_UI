@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 const navItems = [
   { path: '/app/clients', label: 'Clients', Icon: FaUsers },
   { path: '/app/agents', label: 'Agents', Icon: FaUserTie },
-  { path: '/app/resources', label: 'Resources', Icon: FaCubes },
+  { path: '/app/policies', label: 'Policies', Icon: FaCubes },
   { path: '/app/settings', label: 'Settings', Icon: FaCog },
 ];
 
