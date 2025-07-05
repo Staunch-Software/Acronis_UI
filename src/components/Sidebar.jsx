@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styles from './Sidebar.module.css';
-import { FaUsers, FaUserTie, FaCubes, FaCog } from 'react-icons/fa';
+import { FaUsers, FaChartPie, FaCubes, FaCog } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext.jsx';
 
 // Define your navigation items here
 const navItems = [
   { path: '/app/clients', label: 'Clients', Icon: FaUsers },
-  { path: '/app/agents', label: 'Agents', Icon: FaUserTie },
+  { path: '/app/consumption', label: 'Consumption', Icon: FaChartPie },
   { path: '/app/policies', label: 'Policies', Icon: FaCubes },
   { path: '/app/settings', label: 'Settings', Icon: FaCog },
 ];

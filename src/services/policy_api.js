@@ -27,3 +27,20 @@ export const getEnrichedPolicyDetails = (policyId, assetId) => {
     }
   });
 };
+ 
+export const getAllPolicies = () => {
+  return apiClient.get(POLICY_API_PREFIX, {
+    params: {
+      limit: 1000 // Ask for up to 1000 records
+    }
+  });
+};
+export const getPolicyOverview = (tenantUuid) => {
+  const params = {};
+  // The backend expects the query parameter to be absent for 'all', not a string 'all'
+  if (tenantUuid && tenantUuid !== 'all') {
+    params.tenant_uuid = tenantUuid;
+  }
+  
+  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { params });
+};

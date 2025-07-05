@@ -1,0 +1,13 @@
+.consumptionPage { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.header h1 { font-size: 2rem; font-weight: 700; color: #1a202c; margin-bottom: 2rem; }
+.widgetsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.chartsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
+.chartContainer { background-color: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 350px; }
+.chartContainer h3 { margin-top: 0; margin-bottom: 1.5rem; }
+.centeredMessage, .errorMessage { /* ... */ }
+.logContainer { background-color: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.logEntry { display: flex; gap: 1.5rem; padding: 1rem; border-bottom: 1px solid #f0f2f5; }
+.logTimestamp { font-size: 0.9rem; color: #718096; min-width: 180px; flex-shrink: 0; }
+.logType { font-weight: 600; color: #2d3748; display: block; margin-bottom: 0.25rem; }
+.logTitle { color: #4a5568; margin: 0; }

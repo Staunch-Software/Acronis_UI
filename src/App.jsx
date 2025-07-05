@@ -11,6 +11,7 @@ import AgentListPage from './pages/AgentListPage.jsx';
 // --- Step 1: Import the new PolicyListPage component ---
 import PolicyListPage from './pages/PolicyListPage.jsx'; // We will create this file
 import EventHistoryPage from './pages/EventHistoryPage.jsx'; 
+import ConsumptionPage from './pages/ConsumptionPage.jsx';
 
 // Your placeholder pages
 const AgentsPage = () => <h1>Agents Page</h1>;
@@ -48,7 +49,7 @@ function App() {
           <Route index element={<Navigate to="clients" replace />} />
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/:tenantUuid/agents" element={<AgentListPage />} />
-          <Route path="agents" element={<AgentsPage />} />
+          <Route path="consumption" element={<ConsumptionPage />} />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="settings" element={<SettingsPage />} />
 

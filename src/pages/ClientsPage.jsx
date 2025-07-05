@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ClientsPage.module.css';
-import { FaCog, FaSearch, FaCheck } from 'react-icons/fa';
+import { FaCog, FaSearch, FaCheck, FaChevronDown } from 'react-icons/fa';
 import { getTenants } from '../services/tenant_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
@@ -22,10 +22,20 @@ const ClientsPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
- const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allColumns);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
+  const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
+  
+  const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allColumns);
 
   const settingsRef = useRef(null);
+  const statusFilterRef = useRef(null);
+  const typeFilterRef = useRef(null);
+  
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
+  useOutsideClick(statusFilterRef, () => setIsStatusFilterOpen(false));
+  useOutsideClick(typeFilterRef, () => setIsTypeFilterOpen(false));
 
   useEffect(() => {
     const fetchTenantData = async () => {
@@ -45,21 +55,45 @@ const ClientsPage = () => {
   }, []);
 
   const filteredTenants = useMemo(() => {
-    if (!searchTerm) return tenants;
-    return tenants.filter(tenant => tenant.name?.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [tenants, searchTerm]);
+    let filtered = tenants;
 
-  
-  
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(tenant => 
+        tenant.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(tenant => {
+        const isActive = tenant.enabled;
+        return statusFilter === 'active' ? isActive : !isActive;
+      });
+    }
+
+    // Apply type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(tenant => 
+        tenant.tenant_type?.toLowerCase() === typeFilter.toLowerCase()
+      );
+    }
+
+    return filtered;
+  }, [tenants, searchTerm, statusFilter, typeFilter]);
+
+  // Get unique tenant types for filter dropdown
+  const uniqueTypes = useMemo(() => {
+    const types = [...new Set(tenants.map(tenant => tenant.tenant_type).filter(Boolean))];
+    return types.sort();
+  }, [tenants]);
+
   if (loading) return <div className={styles.centeredMessage}>Loading...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
-
 
   return (
     <div className={styles.clientsPage}>
       <header className={styles.header}>
-        {/* --- THIS IS THE FIX --- */}
-        {/* The title is now wrapped in a container to match the AgentListPage structure. */}
         <div className={styles.titleContainer}>
           <h1>Clients</h1>
         </div>
@@ -74,6 +108,57 @@ const ClientsPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          {/* Status Filter */}
+          <div className={styles.filterContainer} ref={statusFilterRef}>
+            <button
+              className={styles.filterButton}
+              onClick={() => setIsStatusFilterOpen(prev => !prev)}
+            >
+              Status: {statusFilter === 'all' ? 'All' : statusFilter === 'active' ? 'Active' : 'Inactive'}
+              <FaChevronDown className={styles.filterArrow} />
+            </button>
+            {isStatusFilterOpen && (
+              <div className={styles.filterDropdown}>
+                <div className={styles.filterOption} onClick={() => { setStatusFilter('all'); setIsStatusFilterOpen(false); }}>
+                  All Status
+                </div>
+                <div className={styles.filterOption} onClick={() => { setStatusFilter('active'); setIsStatusFilterOpen(false); }}>
+                  Active
+                </div>
+                <div className={styles.filterOption} onClick={() => { setStatusFilter('inactive'); setIsStatusFilterOpen(false); }}>
+                  Inactive
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Type Filter */}
+          <div className={styles.filterContainer} ref={typeFilterRef}>
+            <button
+              className={styles.filterButton}
+              onClick={() => setIsTypeFilterOpen(prev => !prev)}
+            >
+              Type: {typeFilter === 'all' ? 'All' : typeFilter}
+              <FaChevronDown className={styles.filterArrow} />
+            </button>
+            {isTypeFilterOpen && (
+              <div className={styles.filterDropdown}>
+                <div className={styles.filterOption} onClick={() => { setTypeFilter('all'); setIsTypeFilterOpen(false); }}>
+                  All Types
+                </div>
+                {uniqueTypes.map(type => (
+                  <div 
+                    key={type} 
+                    className={styles.filterOption} 
+                    onClick={() => { setTypeFilter(type); setIsTypeFilterOpen(false); }}
+                  >
+                    {type}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           
           <div className={styles.settingsContainer} ref={settingsRef}>
             <button
@@ -86,24 +171,22 @@ const ClientsPage = () => {
               <div className={styles.settingsDropdown}>
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
-                 {columns.map(col => {
-                                     // --- THIS IS THE FIX ---
-                                     // We define `isDisabled` right here inside the loop, before we use it.
-                                     const isDisabled = isMaxColumnsReached && !col.isVisible;
-                 
-                                     return (
-                                       <li
-                                         key={col.id}
-                                         className={isDisabled ? styles.disabled : ''}
-                                         onClick={() => handleColumnToggle(col.id)}
-                                       >
-                                         <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                                           {col.isVisible && <FaCheck size={10} />}
-                                         </div>
-                                         <span>{col.label}</span>
-                                       </li>
-                                     );
-                                   })}
+                  {columns.map(col => {
+                    const isDisabled = isMaxColumnsReached && !col.isVisible;
+                    
+                    return (
+                      <li
+                        key={col.id}
+                        className={isDisabled ? styles.disabled : ''}
+                        onClick={() => handleColumnToggle(col.id)}
+                      >
+                        <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
+                          {col.isVisible && <FaCheck size={10} />}
+                        </div>
+                        <span>{col.label}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -112,31 +195,36 @@ const ClientsPage = () => {
       </header>
       
       <div className={styles.gridContainer}>
-        {/* Corrected the typo `div div` to just `div` */}
         <div className={styles.grid} style={{ gridTemplateColumns: `minmax(250px, 2fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
           <div className={styles.gridHeader}>Actions</div>
 
           {filteredTenants.map(tenant => (
-  <div key={tenant.tenant_uuid} className={styles.gridRow}>
-    {activeColumns.map(col => (
-      <div key={col.id} className={styles.gridCell} data-label={col.label}>
-        <span>
-          {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
-           col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
-           ( tenant[col.id] || 'N/A' )}
-        </span>
-      </div>
-    ))}
-    <div className={styles.gridCell} data-label="Actions">
-      <span>
-        <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
-          View Agents
-        </Link>
-      </span>
-    </div>
-  </div>
-))}
+            <div key={tenant.tenant_uuid} className={styles.gridRow}>
+              {activeColumns.map(col => (
+                <div key={col.id} className={styles.gridCell} data-label={col.label}>
+                  <span>
+                    {col.id === 'status' ? ( 
+                      <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>
+                        {tenant.enabled ? 'Active' : 'Inactive'}
+                      </span> 
+                    ) : 
+                    col.id === 'created_on' ? ( 
+                      tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' 
+                    ) : 
+                    ( tenant[col.id] || 'N/A' )}
+                  </span>
+                </div>
+              ))}
+              <div className={styles.gridCell} data-label="Actions">
+                <span>
+                  <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
+                    View Agents
+                  </Link>
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

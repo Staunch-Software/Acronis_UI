@@ -1,5 +1,5 @@
 import apiClient from './apiClient'; // <-- Import the configured axios instance
-
+import { fetchAllPaginated } from './api_helpers.js';
 // Define the API prefix for the tenant resource.
 // This is the part of the URL that comes after the base URL.
 // Example: http://localhost:8000/api/tenants
@@ -57,4 +57,8 @@ export const updateTenant = (tenantUuid, updateData) => {
  */
 export const deleteTenant = (tenantUuid) => {
   return apiClient.delete(`${TENANT_API_PREFIX}/${tenantUuid}`);
+};
+export const getAllTenants = () => {
+  // Just call the helper with the correct endpoint
+  return fetchAllPaginated(TENANT_API_PREFIX);
 };

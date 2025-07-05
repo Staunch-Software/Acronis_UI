@@ -23,3 +23,8 @@ export const getEventHistoryForPolicyOnAsset = (policyId, assetId) => {
     }
   });
 };
+
+// This function returns the entire axios response object
+export const getRecentEventHistory = (limit = 100) => {
+  return apiClient.get(EVENT_HISTORY_API_PREFIX, { params: { limit } });
+};

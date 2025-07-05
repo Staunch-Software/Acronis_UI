@@ -11,12 +11,18 @@
   flex-grow: 1;
   padding: 2rem;
   transition: margin-left 0.3s ease;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+  /* Ensure dropdowns can render above this container */
+  z-index: 1;
 }
 
 /* Desktop: add left margin only when sidebar is open */
 @media (min-width: 769px) {
   .mainContent.shifted {
     margin-left: 240px;
+    
   }
 }
 
@@ -46,5 +52,12 @@
 @media (max-width: 768px) {
   .toggleButton {
     display: block;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 990px) {
+  .mainContent.shifted {
+    margin-left: 240px;
+    padding: 1rem;
   }
 }

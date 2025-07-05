@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-
+import { fetchAllPaginated } from './api_helpers.js';
 const AGENT_API_PREFIX = '/agents/';
 
 /**
@@ -36,4 +36,11 @@ export const getAllAgentsByTenant = (tenantUuid) => {
       skip: 0,
     }
   });
+};
+
+
+export const getAllAgents = () => {
+  // We simply call our powerful helper with the agents' endpoint.
+  // It handles all the looping and page requests for us.
+  return fetchAllPaginated(AGENT_API_PREFIX);
 };
