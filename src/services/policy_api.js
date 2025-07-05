@@ -36,11 +36,14 @@ export const getAllPolicies = () => {
   });
 };
 export const getPolicyOverview = (tenantUuid) => {
-  const params = {};
-  // The backend expects the query parameter to be absent for 'all', not a string 'all'
-  if (tenantUuid && tenantUuid !== 'all') {
-    params.tenant_uuid = tenantUuid;
-  }
-  
-  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { params });
+  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { 
+    params: { tenant_uuid: tenantUuid }
+  });
+};
+
+/**
+ * Fetches the latest 5 policies for EACH tenant. Used for the "All Tenants" view.
+ */
+export const getLatestPoliciesPerTenant = () => {
+  return apiClient.get(`${POLICY_API_PREFIX}/overview/by-tenant`);
 };

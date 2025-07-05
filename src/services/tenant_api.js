@@ -62,3 +62,8 @@ export const getAllTenants = () => {
   // Just call the helper with the correct endpoint
   return fetchAllPaginated(TENANT_API_PREFIX);
 };
+export const syncTenants = () => {
+  // Note: We are not using the TENANT_API_PREFIX here because the endpoint
+  // is under /sync/, not /tenants/.
+  return apiClient.post('/sync/tenants');
+};

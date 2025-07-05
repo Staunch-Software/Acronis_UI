@@ -332,7 +332,87 @@
 .settingsDropdown li.disabled .checkbox {
   border-color: #e2e8f0;
 }
+/* Add these new styles to your existing ClientsPage.module.css file */
 
+/* --- SYNC BUTTON STYLE --- */
+.syncButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background-color: #0071e3;
+  color: white;
+  border-color: #0071e3;
+  font-weight: 600;
+  min-width: 120px; /* Prevents button from shrinking */
+  justify-content: center;
+}
+
+.syncButton:hover {
+  background-color: #005bb5;
+  border-color: #005bb5;
+}
+
+.syncButton:disabled {
+  background-color: #a0aec0;
+  border-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* --- SPINNING ANIMATION --- */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* --- SYNC MESSAGE STYLES --- */
+.syncMessage {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.syncMessage.info {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  color: #0050b3;
+}
+
+.syncMessage.success {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #389e0d;
+}
+
+.syncMessage.error {
+  background-color: #fff1f0;
+  border: 1px solid #ffa39e;
+  color: #cf1322;
+}
+
+.closeMessageButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 1rem;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.closeMessageButton:hover {
+  opacity: 1;
+}
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .header {
