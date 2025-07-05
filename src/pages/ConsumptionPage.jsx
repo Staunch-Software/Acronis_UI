@@ -5,7 +5,7 @@ import styles from './ConsumptionPage.module.css';
 import { getAllAgents } from '../services/agent_api.js';
 import { getAllTenants } from '../services/tenant_api.js';
 // Import the new policy overview function
-import { getPolicyOverview } from '../services/policy_api.js';
+import { getPolicyOverview, getLatestPoliciesPerTenant } from '../services/policy_api.js';
 import StatCard from '../components/dashboard/StatCard.jsx';
 import AssetTypeChart from '../components/dashboard/AssetTypeChart.jsx';
 import TenantFilter from '../components/dashboard/TenantFilter.jsx';
@@ -48,30 +48,37 @@ const ConsumptionPage = () => {
     fetchStaticData();
   }, []);
 
-  // --- EFFECT 2: REWIRED for policies ---
+  // --- EFFECT 2: REWIRED for policies ---newly added
   useEffect(() => {
-    const fetchPolicyDataForTenant = async () => {
+    const fetchPolicyData = async () => {
       try {
         setPolicyLoading(true);
-        // Call our new, efficient overview endpoint
-        const response = await getPolicyOverview(selectedTenant);
-        
-        // Destructure the data and update state
-        const { total_count, recent_policies } = response.data;
-        setPolicyCount(total_count);
-        setRecentPolicies(recent_policies);
 
+        if (selectedTenant === 'all') {
+          // --- For "All Tenants", call the special endpoint ---
+          const response = await getLatestPoliciesPerTenant();
+          // The response is a flat list of policies (latest 5 from each tenant)
+          setRecentPolicies(response.data);
+          // For the global view, the count is the total number of policies shown
+          setPolicyCount(response.data.length);
+        } else {
+          // --- For a single tenant, use the specific overview endpoint ---
+          const response = await getPolicyOverview(selectedTenant);
+          const { total_count, recent_policies } = response.data;
+          setPolicyCount(total_count);
+          setRecentPolicies(recent_policies);
+        }
       } catch (err) {
-        console.error(`Failed to load policy overview for tenant ${selectedTenant}:`, err);
+        console.error(`Failed to load policy data for selection ${selectedTenant}:`, err);
         setPolicyCount(0);
-        setRecentPolicies([]); // Clear data on error
+        setRecentPolicies([]);
       } finally {
         setPolicyLoading(false);
       }
     };
     
-    fetchPolicyDataForTenant();
-  }, [selectedTenant]); // Re-runs whenever the tenant filter changes
+    fetchPolicyData();
+  }, [selectedTenant]);
 
   // Data processing (unchanged)
   const filteredAgents = useMemo(() => {
@@ -103,9 +110,9 @@ const ConsumptionPage = () => {
         />
         {/* --- StatCard UPDATED --- */}
         <StatCard 
-          title="Total Applied Policies" 
-          value={policyCount} // Use the new state variable for the count
-          subtext={selectedTenant === 'all' ? 'Across all tenants' : 'For selected tenant'}
+          title="Applied Policies" 
+          value={policyCount}
+          subtext={selectedTenant === 'all' ? 'Latest policies shown' : 'Total policies for tenant'}
           icon={<FaHistory />} 
         />
       </div>
