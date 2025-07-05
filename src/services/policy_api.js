@@ -31,19 +31,22 @@ export const getEnrichedPolicyDetails = (policyId, assetId) => {
 export const getAllPolicies = () => {
   return apiClient.get(POLICY_API_PREFIX, {
     params: {
-      limit: 1000 // Ask for up to 1000 records
+      limit: 1000
     }
   });
 };
-export const getPolicyOverview = (tenantUuid) => {
-  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { 
-    params: { tenant_uuid: tenantUuid }
-  });
-};
 
-/**
- * Fetches the latest 5 policies for EACH tenant. Used for the "All Tenants" view.
- */
-export const getLatestPoliciesPerTenant = () => {
-  return apiClient.get(`${POLICY_API_PREFIX}/overview/by-tenant`);
+export const getPolicyOverview = (tenantUuid) => {
+  const params = {};
+  
+  // This is the crucial logic:
+  // If tenantUuid is a real ID (and not the string 'all'), we add it to the request.
+  // If tenantUuid is 'all', the params object remains empty, and the backend will
+  // know to fetch data for all tenants.
+  if (tenantUuid && tenantUuid !== 'all') {
+    params.tenant_uuid = tenantUuid;
+  }
+  
+  // This single, simple API call now handles everything.
+  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { params });
 };

@@ -1,43 +1,33 @@
-// consumptionpage.jsx
+// ConsumptionPage.jsx
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './ConsumptionPage.module.css';
 import { getAllAgents } from '../services/agent_api.js';
 import { getAllTenants } from '../services/tenant_api.js';
-// Import the new policy overview function
-import { getPolicyOverview, getLatestPoliciesPerTenant } from '../services/policy_api.js';
+// We only need ONE function now!
+import { getPolicyOverview } from '../services/policy_api.js'; 
 import StatCard from '../components/dashboard/StatCard.jsx';
 import AssetTypeChart from '../components/dashboard/AssetTypeChart.jsx';
 import TenantFilter from '../components/dashboard/TenantFilter.jsx';
 import { FaServer, FaUsers, FaHistory } from 'react-icons/fa';
 
 const ConsumptionPage = () => {
-  // State for raw data
   const [allAgents, setAllAgents] = useState([]);
   const [allTenants, setAllTenants] = useState([]);
-  
-  // --- NEW STATE for policy data ---
   const [policyCount, setPolicyCount] = useState(0);
   const [recentPolicies, setRecentPolicies] = useState([]);
-  
-  // UI and control state
   const [selectedTenant, setSelectedTenant] = useState('all');
   const [policyLoading, setPolicyLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Effect 1: Fetch static data (unchanged)
   useEffect(() => {
     const fetchStaticData = async () => {
       try {
         setLoading(true);
-        const [agentData, tenantData] = await Promise.all([
-          getAllAgents(),
-          getAllTenants(),
-        ]);
+        const [agentData, tenantData] = await Promise.all([getAllAgents(), getAllTenants()]);
         setAllAgents(agentData);
         setAllTenants(tenantData);
-        setError(null);
       } catch (err) {
         console.error("Failed to load initial dashboard data:", err);
         setError("Could not load consumption data.");
@@ -48,26 +38,14 @@ const ConsumptionPage = () => {
     fetchStaticData();
   }, []);
 
-  // --- EFFECT 2: REWIRED for policies ---newly added
   useEffect(() => {
     const fetchPolicyData = async () => {
       try {
         setPolicyLoading(true);
-
-        if (selectedTenant === 'all') {
-          // --- For "All Tenants", call the special endpoint ---
-          const response = await getLatestPoliciesPerTenant();
-          // The response is a flat list of policies (latest 5 from each tenant)
-          setRecentPolicies(response.data);
-          // For the global view, the count is the total number of policies shown
-          setPolicyCount(response.data.length);
-        } else {
-          // --- For a single tenant, use the specific overview endpoint ---
-          const response = await getPolicyOverview(selectedTenant);
-          const { total_count, recent_policies } = response.data;
-          setPolicyCount(total_count);
-          setRecentPolicies(recent_policies);
-        }
+        const response = await getPolicyOverview(selectedTenant);
+        const { total_count, recent_policies } = response.data;
+        setPolicyCount(total_count);
+        setRecentPolicies(recent_policies);
       } catch (err) {
         console.error(`Failed to load policy data for selection ${selectedTenant}:`, err);
         setPolicyCount(0);
@@ -76,11 +54,9 @@ const ConsumptionPage = () => {
         setPolicyLoading(false);
       }
     };
-    
     fetchPolicyData();
   }, [selectedTenant]);
 
-  // Data processing (unchanged)
   const filteredAgents = useMemo(() => {
     if (selectedTenant === 'all') return allAgents;
     return allAgents.filter(agent => agent.tenant_id === selectedTenant);
@@ -93,30 +69,13 @@ const ConsumptionPage = () => {
     <div className={styles.consumptionPage}>
       <header className={styles.header}>
         <h1>Consumption Overview</h1>
-        <TenantFilter
-          tenants={allTenants}
-          selectedTenant={selectedTenant}
-          onTenantChange={setSelectedTenant}
-        />
+        <TenantFilter tenants={allTenants} selectedTenant={selectedTenant} onTenantChange={setSelectedTenant} />
       </header>
-
       <div className={styles.widgetsGrid}>
         <StatCard title="Total Tenants" value={allTenants.length} icon={<FaUsers />} />
-        <StatCard 
-          title="Protected Assets" 
-          value={filteredAgents.length} 
-          subtext={selectedTenant === 'all' ? 'Across all tenants' : 'For selected tenant'} 
-          icon={<FaServer />} 
-        />
-        {/* --- StatCard UPDATED --- */}
-        <StatCard 
-          title="Applied Policies" 
-          value={policyCount}
-          subtext={selectedTenant === 'all' ? 'Latest policies shown' : 'Total policies for tenant'}
-          icon={<FaHistory />} 
-        />
+        <StatCard title="Protected Assets" value={filteredAgents.length} subtext={selectedTenant === 'all' ? 'Across all tenants' : 'For selected tenant'} icon={<FaServer />} />
+        <StatCard title="Applied Policies" value={policyCount} subtext={selectedTenant === 'all' ? 'Total across all tenants' : 'Total for selected tenant'} icon={<FaHistory />} />
       </div>
-
       <div className={styles.chartsGrid}>
         <div className={styles.chartContainer}>
           <h3>Assets by Type</h3>
@@ -125,21 +84,14 @@ const ConsumptionPage = () => {
         <div className={styles.chartContainer}>
           <h3>Last Applied Policies</h3>
           <div className={styles.logContainer}>
-            {/* --- List rendering UPDATED --- */}
             {policyLoading ? (
               <p className={styles.noDataMessage}>Loading policies...</p>
             ) : recentPolicies.length > 0 ? (
-              // Map over the new recentPolicies state
               recentPolicies.map(policy => (
                 <div key={policy.id} className={styles.logEntry}>
                   <div className={styles.logDetails}>
                     <span className={styles.logType}>{policy.policy_name || 'N/A'}</span>
-                    {/* Use resource_name for the asset */}
-                    <p className={styles.logTitle}>On Asset: {policy.resource_name || 'N/A'}</p>
-                    {/* Use policy_created_at for the timestamp */}
-                    <div className={styles.logTimestamp}>
-                      Applied on: {new Date(policy.policy_created_at).toLocaleString()}
-                    </div>
+                    <div className={styles.logTimestamp}>Applied on: {new Date(policy.policy_created_at).toLocaleString()}</div>
                   </div>
                 </div>
               ))
