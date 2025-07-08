@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 import { fetchAllPaginated } from './api_helpers.js';
 const AGENT_API_PREFIX = '/agents/';
+const SYNC_API_PREFIX = '/sync/';
 
 /**
  * Fetches a PAGINATED list of agents filtered by their parent tenant's UUID.
@@ -22,9 +23,7 @@ export const getAgentsByTenantPaginated = (tenantUuid, limit, skip) => {
 
 
 /**
- * --- THIS IS THE NEW FUNCTION ---
- * Fetches ALL agents for a given tenant by requesting a very high limit.
- * Used by AgentDetailModal.
+
  * @param {string} tenantUuid - The UUID of the parent tenant.
  * @returns {Promise<axios.AxiosResponse<{items: any[], total: number}>>}
  */
@@ -43,4 +42,8 @@ export const getAllAgents = () => {
   // We simply call our powerful helper with the agents' endpoint.
   // It handles all the looping and page requests for us.
   return fetchAllPaginated(AGENT_API_PREFIX);
+};
+
+export const syncAgents = () => {
+  return apiClient.post(`${SYNC_API_PREFIX}agents`);
 };

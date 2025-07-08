@@ -3,6 +3,7 @@ import apiClient from './apiClient';
 // Make sure this prefix matches the one in your main_api.py.
 // If your main_api.py has `prefix="/api/policies"`, this should be "/api/policies/".
 const POLICY_API_PREFIX = '/policies/'; 
+const SYNC_API_PREFIX = '/sync/';
 
 // This function gets the main list of policies for an asset. It is correct.
 export const getPoliciesByAssetId = (assetId) => {
@@ -59,4 +60,8 @@ export const getUnassignedPolicyCount = (tenantUuid) => {
   }
   // Calls the new, dedicated endpoint
   return apiClient.get(`${POLICY_API_PREFIX}unassigned-count`, { params });
+};
+
+export const syncPolicies = () => {
+  return apiClient.post(`${SYNC_API_PREFIX}policies`);
 };

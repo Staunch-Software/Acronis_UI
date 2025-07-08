@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-// --- Step 1: Add useLocation to your imports ---
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styles from './PolicyListPage.module.css';
-import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
-import { getPoliciesByAssetId } from '../services/policy_api.js';
+import { FaCog, FaSearch, FaCheck, FaArrowLeft, FaSyncAlt } from 'react-icons/fa';
+import { getPoliciesByAssetId, syncPolicies } from '../services/policy_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import PolicyRow from '../components/PolicyRow.jsx';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
-// Your column definitions are perfect
 const allPolicyColumns = [
   { id: 'policy_name', label: 'Policy Name', isVisible: true },
   { id: 'policy_type', label: 'Policy Type', isVisible: true },
@@ -21,49 +19,63 @@ const allPolicyColumns = [
 ];
 
 const PolicyListPage = () => {
-  // All your state and hook calls are correct
   const { assetId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
+
   const settingsRef = useRef(null);
-  
-  // --- Step 2: Define `location` and `assetName` at the top level of the component ---
-  const location = useLocation();
   const assetName = location.state?.assetName || `ID ${assetId ? assetId.substring(0,8) : ''}...`;
 
-  // Your custom hooks are used correctly
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
   const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allPolicyColumns);
   
-  // Your useEffect for fetching data is perfect
-  useEffect(() => {
+  const fetchPolicyData = async () => {
     if (!assetId) return;
-    const fetchPolicyData = async () => {
-      try {
-        setLoading(true);
-        const response = await getPoliciesByAssetId(assetId);
-        if (Array.isArray(response.data)) {
-          setPolicies(response.data);
-        } else {
-          setPolicies([]);
-        }
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching policies:", err);
-        setError("Could not load policy list.");
-        setPolicies([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      if (!isSyncing) setLoading(true);
+      const response = await getPoliciesByAssetId(assetId);
+      setPolicies(Array.isArray(response.data) ? response.data : []);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching policies:", err);
+      setError("Could not load policy list.");
+      setPolicies([]);
+    } finally {
+      if (!isSyncing) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPolicyData();
   }, [assetId]);
 
-  // Your search filtering logic is perfect
+  const handleSyncClick = async () => {
+    setIsSyncing(true);
+    setSyncMessage('Syncing policies from cloud...');
+    try {
+      const response = await syncPolicies();
+      setSyncMessage(response.data.message || 'Policy sync job successfully queued!');
+      setTimeout(() => {
+        setSyncMessage('');
+        fetchPolicyData(); // Re-fetch data to show updates
+      }, 5000);
+    } catch (err) {
+      console.error("Policy sync failed:", err);
+      setSyncMessage('Error: Could not start policy sync job.');
+      setTimeout(() => setSyncMessage(''), 8000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const filteredPolicies = useMemo(() => {
     if (!searchTerm) return policies;
     return policies.filter(policy =>
@@ -71,7 +83,6 @@ const PolicyListPage = () => {
     );
   }, [policies, searchTerm]);
 
-  // Loading and error states are perfect
   if (loading) return <div className={styles.centeredMessage}>Loading Policies...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
@@ -84,11 +95,18 @@ const PolicyListPage = () => {
           </button>
           <div className={styles.headerText}>
             <h1>Applied Policies</h1>
-            {/* The `assetName` variable is now correctly defined and accessible here */}
             <h2>For Asset: <span>{assetName}</span></h2>
           </div>
         </div>
         <div className={styles.actions}>
+          <button
+            className={styles.syncButton}
+            onClick={handleSyncClick}
+            disabled={isSyncing}
+          >
+            <FaSyncAlt className={isSyncing ? styles.syncingIcon : ''} />
+            {isSyncing ? 'Syncing...' : 'Sync Policies'}
+          </button>
           <div className={styles.searchBar}>
             <FaSearch className={styles.searchIcon} />
             <input
@@ -112,7 +130,7 @@ const PolicyListPage = () => {
                       <li
                         key={col.id}
                         className={isDisabled ? styles.disabled : ''}
-                        onClick={() => handleColumnToggle(col.id)}
+                        onClick={() => !isDisabled && handleColumnToggle(col.id)}
                       >
                         <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
                           {col.isVisible && <FaCheck size={10} />}
@@ -128,6 +146,12 @@ const PolicyListPage = () => {
         </div>
       </header>
 
+      {syncMessage && (
+        <div className={styles.syncMessageBar}>
+          {syncMessage}
+        </div>
+      )}
+
       <div className={styles.gridContainer}>
         <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${activeColumns.length}, 1fr) auto` }}>
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
@@ -135,15 +159,13 @@ const PolicyListPage = () => {
           
           {policies.length > 0 ? (
             filteredPolicies.map(policy => (
-              // --- Step 3: The `assetName` prop is now correctly defined and can be passed ---
               <PolicyRow
-    key={policy.policy_acronis_id}
-    policy={policy}
-    activeColumns={activeColumns}
-    // Pass the assetId and assetName down to each row
-    assetId={assetId}
-    assetName={assetName}
-  />
+                key={policy.policy_acronis_id}
+                policy={policy}
+                activeColumns={activeColumns}
+                assetId={assetId}
+                assetName={assetName}
+              />
             ))
           ) : (
             <div className={styles.noDataCell} style={{ gridColumn: `span ${activeColumns.length + 1}` }}>

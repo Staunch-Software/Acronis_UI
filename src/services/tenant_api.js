@@ -1,8 +1,6 @@
 import apiClient from './apiClient'; // <-- Import the configured axios instance
 import { fetchAllPaginated } from './api_helpers.js';
-// Define the API prefix for the tenant resource.
-// This is the part of the URL that comes after the base URL.
-// Example: http://localhost:8000/api/tenants
+const SYNC_API_PREFIX = '/sync/';
 const TENANT_API_PREFIX = '/tenants/'; // Adjust if your prefix is different in your main FastAPI router
 
 /**
@@ -58,12 +56,21 @@ export const updateTenant = (tenantUuid, updateData) => {
 export const deleteTenant = (tenantUuid) => {
   return apiClient.delete(`${TENANT_API_PREFIX}/${tenantUuid}`);
 };
+
+/**
+ * Fetches ALL tenants by handling pagination automatically.
+ * This is the primary function for getting tenant data for display.
+ * @returns {Promise<any[]>} A promise that resolves to an array of all tenant objects.
+ */
 export const getAllTenants = () => {
-  // Just call the helper with the correct endpoint
   return fetchAllPaginated(TENANT_API_PREFIX);
 };
+
+/**
+ * Queues a background job to sync all tenants from the Acronis cloud.
+ * Corresponds to POST /sync/tenants
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
 export const syncTenants = () => {
-  // Note: We are not using the TENANT_API_PREFIX here because the endpoint
-  // is under /sync/, not /tenants/.
-  return apiClient.post('/sync/tenants');
+  return apiClient.post(`${SYNC_API_PREFIX}tenants`);
 };

@@ -1,43 +1,360 @@
-/* This imports all the shared header, grid, and dropdown styles */
-@import "./AgentListPage.module.css";
-
-/* --- ADD THIS NEW STYLE --- */
-/* This style is for the message when no policies are found */
-.noDataCell {
-  padding: 2rem;
-  text-align: center;
-  color: #888;
-  font-style: italic;
-  /* grid-column: span ALL; is not a valid property, so we set it in the JSX */
-}
-
-/* This class name helps to scope the fadeIn animation if needed */
 .policyPage {
   animation: fadeIn 0.5s ease-in-out;
 }
-/* ... keep all your existing styles ... */
 
-/* --- ADD THESE NEW STYLES FOR THE DISABLED STATE --- */
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(10px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
 
-/* Style for the disabled list item */
+/* === HEADER & ACTIONS === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerText h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.headerText h2 {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #4a5568;
+  margin: 0.25rem 0 0 0;
+}
+
+.headerText h2 span {
+  font-weight: 600;
+  color: #0071e3;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.backButton:hover {
+  background-color: #f7fafc;
+  transform: scale(1.05);
+  color: #0071e3;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchBar {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+}
+
+.searchBar input {
+  padding: 0.6rem 1rem 0.6rem 2.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 250px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchBar input:focus {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+}
+
+/* === SETTINGS DROPDOWN === */
+.settingsContainer {
+  position: relative;
+}
+
+.settingsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #4a5568;
+  transition: all 0.2s;
+}
+
+.settingsButton:hover {
+  background-color: #f7fafc;
+  color: #0071e3;
+}
+
+.settingsDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  width: 280px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdown-open 0.2s ease-out;
+}
+
+@keyframes dropdown-open {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownHeader {
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #1a202c;
+}
+
+.settingsDropdown ul {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.settingsDropdown li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.settingsDropdown li:hover {
+  background-color: #f7fafc;
+}
+
 .settingsDropdown li.disabled {
-  color: #8b8c8f; /* Muted text color */
-  cursor: not-allowed; /* Show a "not allowed" cursor on hover */
-  background-color: #f7fafc; /* A slightly different background */
-  opacity: 0.7; /* Make it slightly transparent */
+  color: #a0aec0;
+  cursor: not-allowed;
+  background-color: transparent !important;
 }
 
-/* We can also prevent the hover effect on disabled items */
-.settingsDropdown li.disabled:hover {
-  background-color: #f7fafc; /* Keep the same background, no change */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 
-/* Optional: Style the checkbox differently when its parent is disabled */
-.settingsDropdown li.disabled .checkbox {
-  border-color: #e2e8f0;
+.checkbox.checked {
+  background-color: #0071e3;
+  border-color: #0071e3;
 }
-/* Add this to the end of your PolicyListPage.module.css */
-.loadingText {
-  color: #a0aec0; /* A muted gray color */
+
+/* === SYNC BUTTON & MESSAGE BAR === */
+.syncButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #0071e3;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.syncButton:hover {
+  background-color: #005bb5;
+}
+
+.syncButton:active {
+  transform: scale(0.98);
+}
+
+.syncButton:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.syncingIcon {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.syncMessageBar {
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  background-color: #e9f5ff;
+  border: 1px solid #91caff;
+  color: #065eab;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* === DATA GRID === */
+.gridContainer {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.grid {
+  display: grid;
+  width: 100%;
+}
+
+.gridHeader {
+  padding: 1rem 1.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #718096;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+  background-color: #fcfdfe;
+  text-align: left;
+}
+
+.gridCell {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.grid > React-Fragment:last-child .gridCell {
+  border-bottom: none;
+}
+
+/* === STATUS PILLS & ACTION BUTTONS === */
+.status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.active {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.inactive {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #0071e3;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-block;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background-color: #005bb5;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* === GENERIC & FALLBACKS === */
+.centeredMessage {
+  padding: 4rem;
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+.errorMessage {
+  color: #c53030;
+}
+
+.noDataCell {
+  padding: 3rem;
+  text-align: center;
+  color: #888;
   font-style: italic;
+  background-color: #f8fafc;
+}
+
+.loadingText {
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* === RESPONSIVE STYLES for mobile === */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
 }
