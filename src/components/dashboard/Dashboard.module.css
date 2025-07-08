@@ -1,68 +1,448 @@
-/* --- Styles for StatCard --- */
-.statCard { display: flex; align-items: center; gap: 1.5rem; background-color: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.iconWrapper { font-size: 1.75rem; color: #fff; background-color: #0071e3; min-width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.textWrapper { display: flex; flex-direction: column; }
-.title { margin: 0 0 0.25rem 0; font-size: 0.9rem; color: #718096; font-weight: 500; }
-.value { margin: 0; font-size: 2rem; font-weight: 700; color: #1a202c; line-height: 1.1; }
-.subtext { margin: 0.25rem 0 0 0; font-size: 0.8rem; color: #a0aec0; }
+/* ConsumptionDashboard.module.css - Fresh Style for Consumption Page */
 
-/* --- Styles for TenantFilter --- */
-.filterContainer { display: flex; align-items: center; gap: 0.75rem; }
-.filterContainer label { font-weight: 500; color: #4a5568; }
-.tenantSelect { padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; background-color: #fff; min-width: 250px; }
+/* TenantFilter Styles - New Design */
+.filterWrapper {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
 
-/* --- NEW and UPDATED styles for AssetTypeChart --- */
+.filterCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 16px 32px rgba(102, 126, 234, 0.25);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.filterCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.filterCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(102, 126, 234, 0.35);
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.filterIcon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.filterLabel {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tenantSelect {
+  width: 100%;
+  min-width: 240px;
+  padding: 0.875rem 2.5rem 0.875rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #374151;
+  transition: all 0.3s ease;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.tenantSelect:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 1);
+}
+
+.tenantSelect:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 1);
+}
+
+.selectArrow {
+  position: absolute;
+  right: 1rem;
+  color: #6b7280;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.tenantSelect:focus + .selectArrow {
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+/* StatCard Styles - Updated for Consumption Page */
+.statCard {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+  background-size: 300% 100%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.statCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  border-color: #cbd5e1;
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.iconWrapper::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.4), transparent);
+  border-radius: 20px;
+  z-index: -1;
+}
+
+.statCard:hover .iconWrapper {
+  transform: scale(1.1);
+  box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+}
+
+.textWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.value {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.1;
+}
+
+.subtext {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.trendIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  margin-top: 0.5rem;
+  max-width: fit-content;
+}
+
+.trendIndicator.positive {
+  color: #059669;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 1px solid #a7f3d0;
+}
+
+.trendIndicator.negative {
+  color: #dc2626;
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
+  border: 1px solid #fca5a5;
+}
+
+/* AssetChart Styles - Modern Update */
 .assetChartContainer {
   display: flex;
-  flex-direction: row; /* Change to row to place chart and legend side-by-side */
-  height: 100%;
-  gap: 2rem; /* Space between chart and legend */
+  flex-direction: row;
+  gap: 3rem;
   align-items: center;
+  min-height: 320px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 24px;
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.assetChartContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6, #ef4444);
+  background-size: 300% 100%;
+  animation: gradientShift 4s ease infinite;
 }
 
 .chartWrapper {
   position: relative;
-  /* --- THE SIZE FIX --- */
-  /* Make the chart smaller and not take up the full height */
-  height: 200px; 
-  width: 200px;
-  flex-shrink: 0; /* Prevents the chart from shrinking */
+  height: 280px;
+  width: 280px;
+  flex-shrink: 0;
 }
 
 .summaryList {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Increase space between legend items */
-  flex-grow: 1; /* Allows the legend to take up remaining space */
+  gap: 1rem;
+  flex-grow: 1;
+  max-width: 400px;
 }
 
 .summaryItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   font-weight: 500;
-  color: #4a5568;
-  font-size: 0.9rem;
+  color: #374151;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* This replaces the icon with a colored square for the legend */
-.legendIcon {
-  width: 12px;
-  height: 12px;
+.summaryItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--item-color, #667eea);
   border-radius: 2px;
+}
+
+.summaryItem:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateX(8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.legendIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .summaryCount {
   margin-left: auto;
   font-weight: 700;
-  color: #1a202c;
-  font-size: 1rem;
+  color: #1e293b;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  min-width: 45px;
+  text-align: center;
+  border: 1px solid #cbd5e1;
 }
 
 .noDataMessage {
   text-align: center;
-  color: #a0aec0;
+  color: #64748b;
   width: 100%;
-  padding: 4rem 0;
+  padding: 4rem 2rem;
   font-style: italic;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filterCard {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .tenantSelect {
+    min-width: 200px;
+    font-size: 0.9rem;
+  }
+  
+  .assetChartContainer {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+  
+  .chartWrapper {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .summaryList {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .statCard {
+    padding: 1.5rem;
+  }
+  
+  .value {
+    font-size: 2rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.tenantSelect:focus,
+.statCard:focus-within {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.chartWrapper[data-loading="true"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chartWrapper[data-loading="true"]::after {
+  content: '';
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .filterCard {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .tenantSelect {
+    background: rgba(15, 23, 42, 0.8);
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .statCard {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+  }
+  
+  .title {
+    color: #94a3b8;
+  }
+  
+  .value {
+    color: #f1f5f9;
+  }
+  
+  .summaryItem {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: #475569;
+    color: #f1f5f9;
+  }
+  
+  .summaryCount {
+    background: linear-gradient(135deg, #334155, #475569);
+    color: #f1f5f9;
+    border-color: #64748b;
+  }
+  
+  .assetChartContainer {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+  }
 }

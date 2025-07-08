@@ -4,8 +4,6 @@
   background-color: #f7f9fc;
 }
 
-/* Sidebar assumed to be 240px wide */
-
 /* Main Content Styling */
 .mainContent {
   flex-grow: 1;
@@ -14,22 +12,24 @@
   overflow-x: auto;
   overflow-y: auto;
   position: relative;
-  /* Ensure dropdowns can render above this container */
   z-index: 1;
 }
 
-/* Desktop: add left margin only when sidebar is open */
+/* Desktop: always add left margin for fixed sidebar */
 @media (min-width: 769px) {
-  .mainContent.shifted {
+  .mainContent {
     margin-left: 240px;
-    
   }
 }
 
-/* Mobile: never add left margin */
+/* Mobile: no margin by default, add margin only when sidebar is open */
 @media (max-width: 768px) {
   .mainContent {
-    margin-left: 0 !important;
+    margin-left: 0;
+  }
+  
+  .mainContent.shifted {
+    margin-left: 240px;
   }
 }
 
@@ -43,9 +43,15 @@
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 0.3rem;
+  padding: 0.5rem;
   font-size: 1.2rem;
   display: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: #0a0538;
 }
 
 /* Show toggle on mobile only */
@@ -55,9 +61,10 @@
   }
 }
 
+/* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 990px) {
-  .mainContent.shifted {
+  .mainContent {
     margin-left: 240px;
-    padding: 1rem;
+    padding: 1.5rem;
   }
 }

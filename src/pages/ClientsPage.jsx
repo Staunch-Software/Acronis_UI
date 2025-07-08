@@ -111,30 +111,42 @@ const ClientsPage = () => {
         </div>
       </header>
       
-      <div className={styles.gridContainer}>
-        {/* Corrected the typo `div div` to just `div` */}
-        <div className={styles.grid} style={{ gridTemplateColumns: `minmax(250px, 2fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
-          {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
-          <div className={styles.gridHeader}>Actions</div>
+     
+<div className={styles.gridContainer}>
+  <div className={styles.grid}>
+    {/* Headers */}
+    <div className={styles.gridHeader}>Tenant Name</div>
+    <div className={styles.gridHeader}>Status</div>
+    <div className={styles.gridHeader}>Contact Email</div>
+    <div className={styles.gridHeader}>Kind / Type</div>
+    <div className={styles.gridHeader}>Actions</div>
 
-          {filteredTenants.map(tenant => (
-            <React.Fragment key={tenant.tenant_uuid}>
-              {activeColumns.map(col => (
-                <div key={col.id} className={styles.gridCell} data-label={col.label}>
-                  {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
-                   col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
-                   ( tenant[col.id] || 'N/A' )}
-                </div>
-              ))}
-              <div className={styles.gridCell}>
-                <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
-                  View Agents
-                </Link>
-              </div>
-            </React.Fragment>
-          ))}
+    {/* Data rows */}
+    {filteredTenants.map(tenant => (
+      <React.Fragment key={tenant.tenant_uuid}>
+        <div className={styles.gridCell} data-label="Tenant Name">
+          {tenant.name || 'N/A'}
         </div>
-      </div>
+        <div className={styles.gridCell} data-label="Status">
+          <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>
+            {tenant.enabled ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        <div className={styles.gridCell} data-label="Contact Email">
+          {tenant.email || 'N/A'}
+        </div>
+        <div className={styles.gridCell} data-label="Kind / Type">
+          {tenant.tenant_type || 'N/A'}
+        </div>
+        <div className={styles.gridCell} data-label="Actions">
+          <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
+            View Agents
+          </Link>
+        </div>
+      </React.Fragment>
+    ))}
+  </div>
+</div>
     </div>
   );
 };

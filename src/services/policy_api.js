@@ -35,18 +35,28 @@ export const getAllPolicies = () => {
     }
   });
 };
-
+/**
+ * Fetches the consumption overview for policies.
+ * @param {string} tenantUuid - The UUID of the tenant, or 'all'.
+ * @returns Promise
+ */
 export const getPolicyOverview = (tenantUuid) => {
   const params = {};
   
-  // This is the crucial logic:
-  // If tenantUuid is a real ID (and not the string 'all'), we add it to the request.
-  // If tenantUuid is 'all', the params object remains empty, and the backend will
-  // know to fetch data for all tenants.
+  // This logic is perfect. If tenantUuid is 'all', params remains empty.
+  // The backend sees no tenant_uuid parameter and fetches data for everyone.
   if (tenantUuid && tenantUuid !== 'all') {
     params.tenant_uuid = tenantUuid;
   }
   
-  // This single, simple API call now handles everything.
-  return apiClient.get(`${POLICY_API_PREFIX}/overview`, { params });
+  // This single API call now handles everything.
+  return apiClient.get(`${POLICY_API_PREFIX}overview`, { params });
+};
+export const getUnassignedPolicyCount = (tenantUuid) => {
+  const params = {};
+  if (tenantUuid && tenantUuid !== 'all') {
+    params.tenant_uuid = tenantUuid;
+  }
+  // Calls the new, dedicated endpoint
+  return apiClient.get(`${POLICY_API_PREFIX}unassigned-count`, { params });
 };

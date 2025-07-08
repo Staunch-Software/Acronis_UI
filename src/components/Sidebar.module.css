@@ -1,6 +1,6 @@
 .sidebar {
   width: 240px;
-  background-color:  #09042e;
+  background-color: #09042e;
   border-right: 1px solid #e2e8f0;
   color: white;
   height: 100vh;
@@ -12,29 +12,35 @@
   z-index: 1000;
   transition: transform 0.3s ease;
 }
+
 .logoContainer {
   padding: 1.5rem;
   text-align: center;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .logoLink {
   font-size: 1.75rem;
   font-weight: 800;
   color: #f9fbfd;
   text-decoration: none;
 }
+
 .nav {
   flex-grow: 1;
   padding: 1rem 0;
 }
+
 .navList {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
 .navItem {
   margin: 0 1rem;
 }
+
 .navLink {
   display: flex;
   align-items: center;
@@ -42,65 +48,63 @@
   margin-bottom: 0.5rem;
   border-radius: 8px;
   text-decoration: none;
-  color: #4a5568;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   transition: all 0.2s ease-in-out;
 }
+
 .navLink:hover {
-  background-color: #f7fafc;
-  color: #2d3748;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
+
 .navItem.active .navLink {
   background-color: #0071e3;
   color: #ffffff;
 }
+
 .navIcon {
   margin-right: 1rem;
   font-size: 1.2rem;
 }
+
 .footer {
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 .logoutButton {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #cbd5e0;
-  background-color: #f8fafc;
-  color: #4a5568;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-}
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
+  transition: all 0.2s ease-in-out;
 }
 
-@media (min-width: 769px) {
+.logoutButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
   .sidebar {
-    position: static;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
     transform: translateX(0);
   }
 }
-@media (max-width: 768px) {
-  /* Default sidebar styles */
-.sidebar {
-  width: 240px;
-  background-color: #09042e;
-  color: white;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
- transform: translateX(-100%);
-}
-  .sidebar.open {
-    transform: translateX(0); /* show when open */
-  }
 
+/* Desktop styles - ensure sidebar is always visible */
+@media (min-width: 769px) {
+  .sidebar {
+    position: fixed;
+    transform: translateX(0);
+    display: flex;
+  }
 }
