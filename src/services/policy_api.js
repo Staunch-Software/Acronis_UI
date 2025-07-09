@@ -58,7 +58,7 @@ export const getUnassignedPolicyCount = (tenantUuid) => {
   if (tenantUuid && tenantUuid !== 'all') {
     params.tenant_uuid = tenantUuid;
   }
-  // Calls the new, dedicated endpoint
+ 
   return apiClient.get(`${POLICY_API_PREFIX}unassigned-count`, { params });
 };
 
