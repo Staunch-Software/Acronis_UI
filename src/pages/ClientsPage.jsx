@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ClientsPage.module.css';
-import { FaCog, FaSearch, FaCheck } from 'react-icons/fa';
-import { getTenants } from '../services/tenant_api.js';
+import { FaCog, FaSearch, FaCheck, FaSyncAlt } from 'react-icons/fa';
+import { getAllTenants, syncTenants } from '../services/tenant_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
@@ -22,25 +22,29 @@ const ClientsPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allColumns);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
+  const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allColumns);
   const settingsRef = useRef(null);
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
 
+  const fetchTenantData = async () => {
+    try {
+      // Set loading to true only for the main data fetch
+      if (!isSyncing) setLoading(true);
+      const responseData = await getAllTenants();
+      setTenants(responseData);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching tenants:", err);
+      setError("Failed to load data from the server. Please check the API connection.");
+    } finally {
+      if (!isSyncing) setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTenantData = async () => {
-      try {
-        setLoading(true);
-        const response = await getTenants();
-        setTenants(response.data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching tenants:", err);
-        setError("Failed to load data from the server. Please check the API connection.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTenantData();
   }, []);
 
@@ -49,22 +53,49 @@ const ClientsPage = () => {
     return tenants.filter(tenant => tenant.name?.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [tenants, searchTerm]);
 
-  
-  
-  if (loading) return <div className={styles.centeredMessage}>Loading...</div>;
-  if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
+  const handleSyncClick = async () => {
+    setIsSyncing(true);
+    setSyncMessage('Syncing tenants from cloud...');
+    try {
+      const response = await syncTenants();
+      setSyncMessage('Sync job successfully queued! Data will be updated shortly.');
+      
+      // After a delay, clear the message and refresh the data on the page
+      setTimeout(() => {
+        setSyncMessage('');
+        fetchTenantData(); // Re-fetch data to show updates
+      }, 5000); // 5-second delay
 
+    } catch (err) {
+      console.error("Sync trigger failed:", err);
+      const errorMessage = err.response?.data?.detail || 'Error: Could not start sync job.';
+      setSyncMessage(errorMessage);
+      setTimeout(() => setSyncMessage(''), 8000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
+  if (loading) return <div className={styles.centeredMessage}>Loading Clients...</div>;
+  if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
   return (
     <div className={styles.clientsPage}>
       <header className={styles.header}>
-        {/* --- THIS IS THE FIX --- */}
-        {/* The title is now wrapped in a container to match the AgentListPage structure. */}
         <div className={styles.titleContainer}>
           <h1>Clients</h1>
         </div>
 
         <div className={styles.actions}>
+          <button
+            className={styles.syncButton}
+            onClick={handleSyncClick}
+            disabled={isSyncing}
+          >
+            <FaSyncAlt className={isSyncing ? styles.syncingIcon : ''} />
+            {isSyncing ? 'Syncing...' : 'Sync Tenants'}
+          </button>
+
           <div className={styles.searchBar}>
             <FaSearch className={styles.searchIcon} />
             <input
@@ -87,23 +118,20 @@ const ClientsPage = () => {
                 <div className={styles.dropdownHeader}>Configure Columns</div>
                 <ul>
                  {columns.map(col => {
-                                     // --- THIS IS THE FIX ---
-                                     // We define `isDisabled` right here inside the loop, before we use it.
-                                     const isDisabled = isMaxColumnsReached && !col.isVisible;
-                 
-                                     return (
-                                       <li
-                                         key={col.id}
-                                         className={isDisabled ? styles.disabled : ''}
-                                         onClick={() => handleColumnToggle(col.id)}
-                                       >
-                                         <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
-                                           {col.isVisible && <FaCheck size={10} />}
-                                         </div>
-                                         <span>{col.label}</span>
-                                       </li>
-                                     );
-                                   })}
+                   const isDisabled = isMaxColumnsReached && !col.isVisible;
+                   return (
+                     <li
+                       key={col.id}
+                       className={isDisabled ? styles.disabled : ''}
+                       onClick={() => !isDisabled && handleColumnToggle(col.id)}
+                     >
+                       <div className={`${styles.checkbox} ${col.isVisible ? styles.checked : ''}`}>
+                         {col.isVisible && <FaCheck size={10} />}
+                       </div>
+                       <span>{col.label}</span>
+                     </li>
+                   );
+                 })}
                 </ul>
               </div>
             )}
@@ -111,42 +139,35 @@ const ClientsPage = () => {
         </div>
       </header>
       
-     
-<div className={styles.gridContainer}>
-  <div className={styles.grid}>
-    {/* Headers */}
-    <div className={styles.gridHeader}>Tenant Name</div>
-    <div className={styles.gridHeader}>Status</div>
-    <div className={styles.gridHeader}>Contact Email</div>
-    <div className={styles.gridHeader}>Kind / Type</div>
-    <div className={styles.gridHeader}>Actions</div>
+      {syncMessage && (
+        <div className={styles.syncMessageBar}>
+          {syncMessage}
+        </div>
+      )}
+      
+      <div className={styles.gridContainer}>
+        <div className={styles.grid} style={{ gridTemplateColumns: `minmax(250px, 2fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
+          {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
+          <div className={styles.gridHeader}>Actions</div>
 
-    {/* Data rows */}
-    {filteredTenants.map(tenant => (
-      <React.Fragment key={tenant.tenant_uuid}>
-        <div className={styles.gridCell} data-label="Tenant Name">
-          {tenant.name || 'N/A'}
+          {filteredTenants.map(tenant => (
+            <React.Fragment key={tenant.tenant_uuid}>
+              {activeColumns.map(col => (
+                <div key={col.id} className={styles.gridCell} data-label={col.label}>
+                  {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
+                   col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
+                   ( tenant[col.id] || 'N/A' )}
+                </div>
+              ))}
+              <div className={styles.gridCell}>
+                <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
+                  View Agents
+                </Link>
+              </div>
+            </React.Fragment>
+          ))}
         </div>
-        <div className={styles.gridCell} data-label="Status">
-          <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>
-            {tenant.enabled ? 'Active' : 'Inactive'}
-          </span>
-        </div>
-        <div className={styles.gridCell} data-label="Contact Email">
-          {tenant.email || 'N/A'}
-        </div>
-        <div className={styles.gridCell} data-label="Kind / Type">
-          {tenant.tenant_type || 'N/A'}
-        </div>
-        <div className={styles.gridCell} data-label="Actions">
-          <Link to={`/app/clients/${tenant.tenant_uuid}/agents`} className={styles.actionButton}>
-            View Agents
-          </Link>
-        </div>
-      </React.Fragment>
-    ))}
-  </div>
-</div>
+      </div>
     </div>
   );
 };

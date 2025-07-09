@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from './AgentListPage.module.css';
-import { FaCog, FaSearch, FaCheck, FaArrowLeft } from 'react-icons/fa';
-import { getAgentsByTenantPaginated } from '../services/agent_api.js';
+import { FaCog, FaSearch, FaCheck, FaArrowLeft, FaSyncAlt } from 'react-icons/fa';
+import { getAgentsByTenantPaginated, syncAgents } from '../services/agent_api.js';
 import { useOutsideClick } from '../hooks/useOutsideClick.js';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js';
 
@@ -28,51 +28,70 @@ const AgentListPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isMoreLoading, setIsMoreLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
+
   const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allAgentColumns);
   const settingsRef = useRef(null);
-
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
 
-  useEffect(() => {
+  const fetchInitialAgentData = async () => {
     if (!tenantUuid) return;
-    const fetchInitialAgentData = async () => {
-      try {
-        setLoading(true);
-        const response = await getAgentsByTenantPaginated(tenantUuid, AGENTS_PER_PAGE, 0);
-        setAgents(response.data.items);
-        setHasMore(response.data.items.length < response.data.total);
-        setPage(1);
-        setError(null);
-      } catch (err) {
-        console.error(`Error fetching agents for tenant ${tenantUuid}:`, err);
-        setError("Could not load agent data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      if (!isSyncing) setLoading(true);
+      const response = await getAgentsByTenantPaginated(tenantUuid, AGENTS_PER_PAGE, 0);
+      setAgents(response.data.items);
+      setHasMore(response.data.items.length < response.data.total);
+      setPage(1);
+      setError(null);
+    } catch (err) {
+      console.error(`Error fetching agents for tenant ${tenantUuid}:`, err);
+      setError("Could not load agent data.");
+    } finally {
+      if (!isSyncing) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchInitialAgentData();
   }, [tenantUuid]);
 
   const loadMoreAgents = async () => {
     if (isMoreLoading || !hasMore) return;
-
     setIsMoreLoading(true);
     try {
       const nextPage = page + 1;
       const skip = page * AGENTS_PER_PAGE;
       const response = await getAgentsByTenantPaginated(tenantUuid, AGENTS_PER_PAGE, skip);
-      
       setAgents(prevAgents => [...prevAgents, ...response.data.items]);
-      
       const loadedCount = agents.length + response.data.items.length;
       setHasMore(loadedCount < response.data.total);
       setPage(nextPage);
-
     } catch (err) {
       console.error("Error fetching more agents:", err);
       setError("Could not load more agents.");
     } finally {
       setIsMoreLoading(false);
+    }
+  };
+
+  const handleSyncClick = async () => {
+    setIsSyncing(true);
+    setSyncMessage('Syncing agents from cloud...');
+    try {
+      const response = await syncAgents();
+      setSyncMessage('Agent sync job successfully queued!');
+      setTimeout(() => {
+        setSyncMessage('');
+        // Re-fetch the first page of data to show any immediate updates
+        fetchInitialAgentData();
+      }, 5000);
+    } catch (err) {
+      console.error("Agent sync failed:", err);
+      setSyncMessage('Error: Could not start agent sync job.');
+      setTimeout(() => setSyncMessage(''), 8000);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -96,6 +115,14 @@ const AgentListPage = () => {
           <h1>Agents</h1>
         </div>
         <div className={styles.actions}>
+          <button
+            className={styles.syncButton}
+            onClick={handleSyncClick}
+            disabled={isSyncing}
+          >
+            <FaSyncAlt className={isSyncing ? styles.syncingIcon : ''} />
+            {isSyncing ? 'Syncing...' : 'Sync Agents'}
+          </button>
           <div className={styles.searchBar}>
             <FaSearch className={styles.searchIcon} />
             <input
@@ -134,6 +161,12 @@ const AgentListPage = () => {
           </div>
         </div>
       </header>
+
+      {syncMessage && (
+        <div className={styles.syncMessageBar}>
+          {syncMessage}
+        </div>
+      )}
       
       <div className={styles.gridContainer}>
         <div className={styles.grid} style={{ gridTemplateColumns: `minmax(200px, 1.5fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
