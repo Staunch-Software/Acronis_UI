@@ -1,0 +1,131 @@
+/* src/pages/CustomerDetailPage.module.css (REPLACED) */
+
+.detailPage { 
+  padding: 2rem; 
+  animation: fadeIn 0.5s ease-in-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.header { 
+  margin-bottom: 1.5rem; 
+}
+.header h1 { 
+  font-size: 2rem; 
+  font-weight: 700; 
+  color: #1a202c; 
+  margin: 0; 
+}
+.uuid { 
+  font-family: 'Courier New', Courier, monospace; 
+  font-size: 0.9rem; 
+  color: #718096; 
+  margin-top: 0.25rem;
+}
+
+.controls {
+  margin-bottom: 2rem;
+}
+
+.filterContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.filterIcon {
+  color: #94a3b8;
+}
+
+.filterSelect {
+  border: none;
+  background-color: transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+.filterSelect:focus {
+  outline: none;
+}
+
+.content { 
+  background-color: #fff; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  overflow: hidden; /* Important for table border radius */
+}
+
+.policiesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.policiesTable th, .policiesTable td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.policiesTable th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.policiesTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.policiesTable tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.policyNameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.policyIcon {
+  color: #3b82f6;
+}
+
+.errorMessage {
+  color: #ef4444;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f1f5f9;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

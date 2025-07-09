@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
+import CustomerDetailPage from './pages/CustomerDetailPage.jsx';
 
 // Import existing pages
 import LoginPage from './pages/LoginPage.jsx';
@@ -50,6 +51,7 @@ function App() {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/:tenantUuid/agents" element={<AgentListPage />} />
           <Route path="consumption" element={<ConsumptionPage />} />
+          <Route path="customer-details/:tenantUuid" element={<CustomerDetailPage />} />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="settings" element={<SettingsPage />} />
 

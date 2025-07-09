@@ -35,6 +35,8 @@ export const getAllPolicies = () => {
     }
   });
 };
+
+// consumption page (dasboard)
 /**
  * Fetches the consumption overview for policies.
  * @param {string} tenantUuid - The UUID of the tenant, or 'all'.
@@ -59,4 +61,24 @@ export const getUnassignedPolicyCount = (tenantUuid) => {
   }
   // Calls the new, dedicated endpoint
   return apiClient.get(`${POLICY_API_PREFIX}unassigned-count`, { params });
+};
+/**
+ * Fetches a paginated and filtered list of policies for a specific tenant.
+ * @param {string} tenantUuid The UUID of the tenant.
+ * @param {string} period The time filter ('7d', '14d', etc.) or null.
+ * @param {number} page The current page number (e.g., 1).
+ * @param {number} limit The number of items per page.
+ */
+export const getPoliciesForTenant = (tenantUuid, period, page, limit) => {
+  const params = {
+    skip: (page - 1) * limit,
+    limit: limit
+  };
+  
+  if (period && period !== 'all') {
+    params.period = period;
+  }
+  
+  // This will call the new endpoint, e.g., /policies/tenant/some-uuid
+  return apiClient.get(`${POLICY_API_PREFIX}/tenant/${tenantUuid}`, { params });
 };
