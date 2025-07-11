@@ -51,7 +51,10 @@ function App() {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/:tenantUuid/agents" element={<AgentListPage />} />
           <Route path="consumption" element={<ConsumptionPage />} />
-          <Route path="customer-details/:tenantUuid" element={<CustomerDetailPage />} />
+          <Route 
+            path="consumption/customer/:tenantUuid" 
+            element={<CustomerDetailPage />} 
+          />
           <Route path="resources" element={<ResourcesPage />} />
           <Route path="settings" element={<SettingsPage />} />
 

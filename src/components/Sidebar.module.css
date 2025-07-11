@@ -430,6 +430,7 @@
   to { opacity: 1; }
 }
 
+
 /* Focus states for accessibility */
 .navLink:focus,
 .logoutButton:focus {

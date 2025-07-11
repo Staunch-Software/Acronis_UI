@@ -59,7 +59,7 @@ const ClientsPage = () => {
     try {
       const response = await syncTenants();
       setSyncMessage('Sync job successfully queued! Data will be updated shortly.');
-      
+     
       // After a delay, clear the message and refresh the data on the page
       setTimeout(() => {
         setSyncMessage('');
@@ -75,7 +75,7 @@ const ClientsPage = () => {
       setIsSyncing(false);
     }
   };
-  
+ 
   if (loading) return <div className={styles.centeredMessage}>Loading Clients...</div>;
   if (error) return <div className={`${styles.centeredMessage} ${styles.errorMessage}`}>{error}</div>;
 
@@ -105,7 +105,7 @@ const ClientsPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+         
           <div className={styles.settingsContainer} ref={settingsRef}>
             <button
               className={styles.settingsButton}
@@ -138,13 +138,13 @@ const ClientsPage = () => {
           </div>
         </div>
       </header>
-      
+     
       {syncMessage && (
         <div className={styles.syncMessageBar}>
           {syncMessage}
         </div>
       )}
-      
+     
       <div className={styles.gridContainer}>
         <div className={styles.grid} style={{ gridTemplateColumns: `minmax(250px, 2fr) repeat(${activeColumns.length - 1}, 1fr) auto` }}>
           {activeColumns.map(col => <div key={col.id} className={styles.gridHeader}>{col.label}</div>)}
@@ -154,8 +154,8 @@ const ClientsPage = () => {
             <React.Fragment key={tenant.tenant_uuid}>
               {activeColumns.map(col => (
                 <div key={col.id} className={styles.gridCell} data-label={col.label}>
-                  {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) : 
-                   col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) : 
+                  {col.id === 'status' ? ( <span className={`${styles.status} ${tenant.enabled ? styles.active : styles.inactive}`}>{tenant.enabled ? 'Active' : 'Inactive'}</span> ) :
+                   col.id === 'created_on' ? ( tenant.created_on ? new Date(tenant.created_on).toLocaleDateString() : 'N/A' ) :
                    ( tenant[col.id] || 'N/A' )}
                 </div>
               ))}
@@ -173,3 +173,5 @@ const ClientsPage = () => {
 };
 
 export default ClientsPage;
+
+

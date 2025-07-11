@@ -105,7 +105,7 @@ const Sidebar = ({ isOpen }) => {
                   {isCustomerwiseOpen && (
                     <ul className={`${styles.dropdownMenu} ${styles.nestedDropdown}`}>
                       {customers.map(customer => {
-                        const customerPath = `/app/consumption/${customer.tenant_uuid}`;
+                        const customerPath = `/app/consumption/customer/${customer.tenant_uuid}`;
                         const isActive = location.pathname === customerPath;
                         return (
                           <li key={customer.tenant_uuid} className={styles.nestedNavItem}>

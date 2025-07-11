@@ -74,3 +74,8 @@ export const getAllTenants = () => {
 export const syncTenants = () => {
   return apiClient.post(`${SYNC_API_PREFIX}tenants`);
 };
+
+export const getTenantDetails = (tenantUuid) => {
+  // This assumes your tenant router has a GET endpoint like `/tenants/{tenant_uuid}`
+  return apiClient.get(`/tenants/${tenantUuid}`); 
+};

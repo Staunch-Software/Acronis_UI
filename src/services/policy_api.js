@@ -78,8 +78,16 @@ export const getPoliciesForTenant = (tenantUuid, period, page, limit) => {
   }
   
   // This will call the new endpoint, e.g., /policies/tenant/some-uuid
-  return apiClient.get(`${POLICY_API_PREFIX}/tenant/${tenantUuid}`, { params });
+  return apiClient.get(`${POLICY_API_PREFIX}tenant/${tenantUuid}`, { params });
 };
 export const syncPolicies = () => {
   return apiClient.post(`${SYNC_API_PREFIX}policies`);
+};
+export const getPoliciesForExport = (tenantUuid, period) => {
+  const params = {};
+  if (period && period !== 'all') {
+    params.period = period;
+  }
+  // Calls the new backend endpoint
+  return apiClient.get(`/policies/tenant/${tenantUuid}/export`, { params });
 };
