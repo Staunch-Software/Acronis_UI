@@ -3,9 +3,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from './CustomerDetailPage.module.css';
-import { getPoliciesForTenant, getPoliciesForExport } from '../services/policy_api.js';
+import { getPoliciesForTenant,getRevokedPoliciesForTenant, getPoliciesForExport } from '../services/policy_api.js';
 import { getTenantDetails } from '../services/tenant_api.js';
-import { FaFilter, FaShieldAlt, FaSpinner, FaExclamationCircle, FaCog, FaCheck, FaFileExcel } from 'react-icons/fa';
+import { FaFilter, FaShieldAlt, FaSpinner, FaExclamationCircle, FaCog, FaCheck, FaEye, FaFileExcel , FaBan, FaTasks } from 'react-icons/fa';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useConfigurableColumns } from '../hooks/useConfigurableColumns.js'; 
 import * as XLSX from 'xlsx';
@@ -26,7 +26,8 @@ const BATCH_SIZE = 100; // Increased batch size for better performance
 
 const CustomerDetailPage = () => {
   const { tenantUuid } = useParams();
-  
+  // --- 2. State to track the current view: 'applied' or 'revoked' ---
+  const [viewMode, setViewMode] = useState('applied'); 
   // State for data and UI
   const [tenantInfo, setTenantInfo] = useState(null);
   const [policies, setPolicies] = useState([]);
@@ -45,83 +46,71 @@ const CustomerDetailPage = () => {
   const { columns, handleColumnToggle, activeColumns, isMaxColumnsReached } = useConfigurableColumns(allPolicyColumns);
   const settingsRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  // State to track the current view: 'applied' or 'revoked'
+  
   
   useOutsideClick(settingsRef, () => setIsSettingsOpen(false));
   
   // Fetch the tenant's name when the component loads
   useEffect(() => {
     if (!tenantUuid) return;
-
-    const fetchTenantInfo = async () => {
-      try {
-        const response = await getTenantDetails(tenantUuid);
-        setTenantInfo(response.data);
-      } catch (err) {
+    setTenantInfo(null); // Reset on tenant change
+    getTenantDetails(tenantUuid)
+      .then(res => setTenantInfo(res.data))
+      .catch(err => {
         console.error("Failed to fetch tenant details:", err);
-        setTenantInfo({ name: "Unknown Customer" });
-      }
-    };
-
-    fetchTenantInfo();
+        setTenantInfo({ name: "Customer Not Found" });
+      });
   }, [tenantUuid]);
 
   // Optimized fetchPolicies function - removed policies.length dependency
-  const fetchPolicies = useCallback(async (page, filter, isFirstLoad = false) => {
+  const fetchPolicies = useCallback(async (page, filter, mode, isFirstLoad = false) => {
     if (!tenantUuid) return;
 
-    if (isFirstLoad) {
-      setLoading(true);
-      setError(null);
-    } else {
-      setIsLoadingMore(true);
-    }
+    if (isFirstLoad) setLoading(true); else setIsLoadingMore(true);
+    setError(null);
 
     try {
-      const response = await getPoliciesForTenant(tenantUuid, filter, page, BATCH_SIZE);
+      const apiCall = mode === 'applied' 
+        ? getPoliciesForTenant(tenantUuid, filter, page, BATCH_SIZE)
+        : getRevokedPoliciesForTenant(tenantUuid, filter, page, BATCH_SIZE);
+      
+      const response = await apiCall;
       
       if (response.data && Array.isArray(response.data.items)) {
         const newItems = response.data.items;
-        
-        setPolicies(prev => {
-          const updated = page === 1 ? newItems : [...prev, ...newItems];
-          // Check if we have more items to load
-          const hasMoreItems = updated.length < response.data.total;
-          setHasMore(hasMoreItems);
-          return updated;
-        });
-        
+        setPolicies(prev => page === 1 ? newItems : [...prev, ...newItems]);
         setTotalPolicies(response.data.total);
-      } else {
-        throw new Error("Received an invalid data format from the server.");
-      }
+        setHasMore((policies.length + newItems.length) < response.data.total);
+      } else { throw new Error("Invalid data format"); }
     } catch (err) {
-      console.error("Failed to load policies for tenant:", err);
-      setError("Could not load policy data. Please try again.");
-      setHasMore(false);
+      console.error(`Failed to load policies for mode '${mode}':`, err);
+      setError("Could not load policy data.");
     } finally {
       setLoading(false);
       setIsLoadingMore(false);
     }
-  }, [tenantUuid]); // Removed policies.length dependency
+  }, [tenantUuid, policies.length]);
 
   // Reset and fetch policies when filter or tenant changes
   useEffect(() => {
     setCurrentPage(1);
     setHasMore(true);
     setPolicies([]);
-    setError(null);
-    fetchPolicies(1, timeFilter, true);
-  }, [timeFilter, tenantUuid, fetchPolicies]);
+    fetchPolicies(1, timeFilter, viewMode, true);
+  }, [timeFilter, tenantUuid, viewMode]); // <-- `viewMode` is the key dependency
 
-  // Load more policies function
   const loadMorePolicies = useCallback(() => {
     if (!isLoadingMore && hasMore) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
-      fetchPolicies(nextPage, timeFilter, false);
+      fetchPolicies(nextPage, timeFilter, viewMode, false);
     }
-  }, [currentPage, timeFilter, fetchPolicies, isLoadingMore, hasMore]);
-
+  }, [currentPage, timeFilter, viewMode, isLoadingMore, hasMore])
+// --- 5. New, simpler function to toggle the view ---
+  const handleToggleViewMode = () => {
+    setViewMode(prevMode => prevMode === 'applied' ? 'revoked' : 'applied');
+  };
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -199,7 +188,9 @@ const CustomerDetailPage = () => {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <div className={styles.headerLeft}>
-              <h1>{tenantInfo ? tenantInfo.name : 'Loading...'} - Policy Details</h1>
+              <h1>{tenantInfo ? tenantInfo.name : 'Loading...'} - Policy Details
+                 <span className={styles.viewTitle}> {viewMode === 'applied' ? 'Applied Consumption' : 'Revoked Consumption'}</span>
+              </h1>
               <p className={styles.policyCount}>
                 {loading && policies.length === 0 ? 'Loading...' : `${policies.length} of ${totalPolicies} policies shown`}
               </p>
@@ -207,6 +198,17 @@ const CustomerDetailPage = () => {
           </div>
 
           <div className={styles.controls}>
+             <div className={styles.filterContainer}>
+              <FaEye className={styles.filterIcon} />
+              <select 
+                value={viewMode} 
+                onChange={e => setViewMode(e.target.value)} 
+                className={styles.filterSelect}
+              >
+                <option value="applied">View Applied</option>
+                <option value="revoked">View Revoked</option>
+              </select>
+            </div>
             <div className={styles.filterContainer}>
               <FaFilter className={styles.filterIcon} />
               <select value={timeFilter} onChange={handleFilterChange} className={styles.filterSelect}>
@@ -221,6 +223,16 @@ const CustomerDetailPage = () => {
             </div>
             
             <div className={styles.rightControls}>
+               {/* <button 
+                className={styles.actionButton}
+                onClick={handleToggleViewMode}
+              >
+                {viewMode === 'applied' ? (
+                  <><FaBan /> View Revoked</>
+                ) : (
+                  <><FaTasks /> View Applied</>
+                )}
+              </button> */}
               <button 
                 className={styles.actionButton} 
                 onClick={handleExport} 
@@ -305,13 +317,49 @@ const CustomerDetailPage = () => {
                 <table className={styles.policiesTable}>
                   <thead>
                     <tr>
-                      {activeColumns.map(col => (
-                        <th key={col.id}>{col.label}</th>
-                      ))}
+                      {activeColumns.map(col => {
+                        // Dynamically change header text
+                        let label = col.label;
+                        if (col.id === 'policy_created_at') {
+                          label = viewMode === 'revoked' ? 'Date Created' : 'Date Applied';
+                        }
+                        // Hide "Applied To" column for revoked policies
+                        if (viewMode === 'revoked' && col.id === 'resource_name') {
+                          return null;
+                        }
+                        return <th key={col.id}>{label}</th>;
+                      })}
                     </tr>
                   </thead>
                   <tbody>
-                    {policies.map(renderPolicyRow)}
+                    {policies.map(policy => (
+                      <tr key={`${policy.id}-${policy.policy_acronis_id}`}>
+                        {activeColumns.map(col => {
+                           // Hide "Applied To" cell for revoked policies
+                          if (viewMode === 'revoked' && col.id === 'resource_name') {
+                            return null;
+                          }
+                          return (
+                            <td key={col.id}>
+                              {/* Your existing cell rendering logic here */}
+                              {(() => {
+                                const value = policy[col.id];
+                                switch (col.id) {
+                                  case 'policy_name':
+                                    return <><FaShieldAlt className={styles.policyIcon}/>{value || 'Unnamed'}</>;
+                                  case 'policy_created_at':
+                                    return value ? new Date(value).toLocaleString() : 'N/A';
+                                  case 'policy_enabled':
+                                    return value ? 'Yes' : 'No';
+                                  default:
+                                    return value || 'N/A';
+                                }
+                              })()}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </InfiniteScroll>

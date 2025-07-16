@@ -1,152 +1,164 @@
-// src/components/Sidebar.jsx (FIXED)
+// src/components/Sidebar.jsx (Your code with the two requested fixes)
 
-import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import styles from './Sidebar.module.css';
-import { 
-  FaUsers, 
-  FaChartPie, 
-  FaCubes, 
-  FaCog, 
-  FaChevronRight, 
-  FaBuilding,
-  FaThList
-} from 'react-icons/fa';
+import { FaUsers, FaChartPie, FaCubes, FaCog, FaChevronRight, FaBuilding, FaThList, FaSearch } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getAllTenants } from '../services/tenant_api.js';
 
-const Sidebar = ({ isOpen }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [customers, setCustomers] = useState([]);
-  
-  // State to manage which dropdowns are open
-  const [isConsumptionOpen, setIsConsumptionOpen] = useState(false);
-  const [isCustomerwiseOpen, setIsCustomerwiseOpen] = useState(false);
+// FlyoutPanel Component (using Portal) - No changes needed here
+const FlyoutPanel = ({ isOpen, customers, searchTerm, onSearch, onMouseEvents }) => {
+  if (!isOpen) return null;
 
-  // Check if any customer route is active
-  const isAnyCustomerActive = customers.some(customer => 
-    location.pathname === `/app/consumption/${customer.tenant_uuid}`
+  const filteredCustomers = customers.filter(customer =>
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Auto-expand menus based on current route
-  useEffect(() => {
-    if (location.pathname.startsWith('/app/consumption')) {
-      setIsConsumptionOpen(true);
-      
-      // If we're on a specific customer page, also open the customerwise menu
-      if (isAnyCustomerActive) {
-        setIsCustomerwiseOpen(true);
-      }
-    } else {
-      setIsConsumptionOpen(false);
-      setIsCustomerwiseOpen(false);
-    }
-  }, [location.pathname, isAnyCustomerActive]);
+  return createPortal(
+    <div
+      className={`${styles.flyoutPanel} ${isOpen ? styles.flyoutOpen : ''}`}
+      onMouseEnter={onMouseEvents.onMouseEnter}
+      onMouseLeave={onMouseEvents.onMouseLeave}
+    >
+      <div className={styles.flyoutHeader}>Customers</div>
+      <div className={styles.searchContainer}>
+        <FaSearch className={styles.searchIcon} />
+        <input
+          type="text"
+          placeholder="Search customers..."
+          className={styles.searchInput}
+          value={searchTerm}
+          onChange={(e) => onSearch(e.target.value)}
+        />
+      </div>
+      <ul className={styles.flyoutList}>
+        {filteredCustomers.length > 0 ? (
+          filteredCustomers.map(customer => (
+            <li key={customer.tenant_uuid}>
+              <NavLink
+                to={`/app/consumption/customer/${customer.tenant_uuid}`}
+                className={({ isActive }) => `${styles.flyoutLink} ${isActive ? styles.active : ''}`}
+              >
+                <FaBuilding className={styles.flyoutIcon} />
+                <span>{customer.name}</span>
+              </NavLink>
+            </li>
+          ))
+        ) : (
+          <li className={styles.noResults}>No customers found.</li>
+        )}
+      </ul>
+    </div>,
+    document.getElementById('flyout-portal-root')
+  );
+};
 
-  // Fetch tenants to build the dropdown menu
+// Main Sidebar Component
+const Sidebar = ({ isOpen }) => {
+  const location = useLocation();
+  const { logout } = useAuth();
+  const [customers, setCustomers] = useState([]);
+  const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const hoverTimeoutRef = useRef(null);
+
+  const isConsumptionSectionActive = location.pathname.startsWith('/app/consumption');
+
+  useEffect(() => {
+    setIsFlyoutOpen(false);
+  }, [location.pathname]);
+
   useEffect(() => {
     const fetchCustomersForMenu = async () => {
       try {
         const tenantData = await getAllTenants();
         setCustomers(tenantData);
-      } catch (error) { 
-        console.error("Failed to fetch customers:", error); 
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
       }
     };
     fetchCustomersForMenu();
   }, []);
 
-  // This function handles the special click on the main "Consumption" item
-  const handleConsumptionClick = () => {
-    navigate('/app/consumption'); // Navigate to the main dashboard
-    setIsConsumptionOpen(prev => !prev); // Toggle the submenu
+  const handleMouseEnter = () => {
+    clearTimeout(hoverTimeoutRef.current);
+    setIsFlyoutOpen(true);
   };
 
-  // Handle customerwise button click
-  const handleCustomerwiseClick = () => {
-    setIsCustomerwiseOpen(prev => !prev);
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsFlyoutOpen(false);
+    }, 200);
   };
 
   return (
-    <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
-      <div className={styles.logoContainer}>
-        <NavLink to="/app/clients" className={styles.logoLink}>Acronis</NavLink>
-      </div>
-      <nav className={styles.nav}>
-        <ul className={styles.navList}>
-          {/* 1. Clients (Static Link) */}
-          <li className={`${styles.navItem} ${location.pathname.startsWith('/app/clients') ? styles.active : ''}`}>
-            <NavLink to="/app/clients" className={styles.navLink}>
-              <FaUsers className={styles.navIcon} />
-              <span>Clients</span>
-            </NavLink>
-          </li>
+    <>
+      <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.logoContainer}>
+          <NavLink to="/app/clients" className={styles.logoLink}>Acronis</NavLink>
+        </div>
+        <nav className={styles.nav}>
+          <ul className={styles.navList}>
 
-          {/* 2. Consumption (Hybrid Dropdown) */}
-          <li className={`${styles.navItem} ${location.pathname.startsWith('/app/consumption') ? styles.activeParent : ''}`}>
-            <button className={styles.navLink} onClick={handleConsumptionClick}>
-              <FaChartPie className={styles.navIcon} />
-              <span>Consumption</span>
-              <FaChevronRight className={`${styles.chevron} ${isConsumptionOpen ? styles.open : ''}`} />
-            </button>
-            {isConsumptionOpen && (
-              <ul className={styles.dropdownMenu}>
-                <li className={styles.navItem}>
-                  <button 
-                    className={`${styles.navLink} ${styles.subLink} ${isCustomerwiseOpen || isAnyCustomerActive ? styles.activeSubMenu : ''}`} 
-                    onClick={handleCustomerwiseClick}
-                  >
-                    <FaThList className={styles.navIcon} />
-                    <span>customerwise</span>
-                    <FaChevronRight className={`${styles.chevron} ${isCustomerwiseOpen ? styles.open : ''}`} />
-                  </button>
-                  {isCustomerwiseOpen && (
-                    <ul className={`${styles.dropdownMenu} ${styles.nestedDropdown}`}>
-                      {customers.map(customer => {
-                        const customerPath = `/app/consumption/customer/${customer.tenant_uuid}`;
-                        const isActive = location.pathname === customerPath;
-                        return (
-                          <li key={customer.tenant_uuid} className={styles.nestedNavItem}>
-                            <NavLink 
-                              to={customerPath} 
-                              className={`${styles.navLink} ${styles.subLink} ${styles.nestedSubLink} ${isActive ? styles.active : ''}`}
-                            >
-                              <FaBuilding className={styles.navIcon} />
-                              <span>{customer.name}</span>
-                            </NavLink>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </li>
-              </ul>
-            )}
-          </li>
+            <li className={styles.navItem}>
+              <NavLink to="/app/clients" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>
+                <FaUsers className={styles.navIcon} /><span>Clients</span>
+              </NavLink>
+            </li>
 
-          {/* 3. Policies (Static Link) */}
-          <li className={`${styles.navItem} ${location.pathname.startsWith('/app/policies') ? styles.active : ''}`}>
-            <NavLink to="/app/policies" className={styles.navLink}>
-              <FaCubes className={styles.navIcon} />
-              <span>Policies</span>
-            </NavLink>
-          </li>
-          
-          {/* 4. Settings (Static Link) */}
-          <li className={`${styles.navItem} ${location.pathname.startsWith('/app/settings') ? styles.active : ''}`}>
-            <NavLink to="/app/settings" className={styles.navLink}>
-              <FaCog className={styles.navIcon} />
-              <span>Settings</span>
-            </NavLink>
-          </li>
-        </ul>
-      </nav>
-      <div className={styles.footer}>
-        <button onClick={logout} className={styles.logoutButton}>Logout</button>
-      </div>
-    </aside>
+            <li className={styles.navItem}>
+              <NavLink
+                to="/app/consumption"
+                end
+                className={({ isActive }) => `${styles.navLink} ${isActive || (isConsumptionSectionActive && !isActive) ? styles.activeParentLink : ''}`}
+              >
+                <FaChartPie className={styles.navIcon} /><span>Consumption</span>
+              </NavLink>
+            </li>
+
+            <li
+              className={styles.navItem}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              {/* --- FIX 1: Icon Visibility --- */}
+              {/* Removed the 'styles.subLink' class to fix the alignment and make the icon visible. */}
+              <button className={`${styles.navLink} ${isFlyoutOpen ? styles.active : ''}`}>
+                <FaThList className={`${styles.navIcon} ${styles.customerwiseIcon}`} />
+
+                <span>customerwise</span>
+                <FaChevronRight className={styles.chevron} />
+              </button>
+            </li>
+
+            <li className={styles.navItem}>
+              <NavLink to="/app/policies" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>
+                <FaCubes className={styles.navIcon} /><span>Policies</span>
+              </NavLink>
+            </li>
+            <li className={styles.navItem}>
+              <NavLink to="/app/settings" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>
+                <FaCog className={styles.navIcon} /><span>Settings</span>
+              </NavLink>
+            </li>
+
+          </ul>
+        </nav>
+        <div className={styles.footer}>
+          <button onClick={logout} className={styles.logoutButton}>Logout</button>
+        </div>
+      </aside>
+
+      <FlyoutPanel
+        isOpen={isFlyoutOpen}
+        customers={customers}
+        searchTerm={searchTerm}
+        onSearch={setSearchTerm}
+        onMouseEvents={{ onMouseEnter: handleMouseEnter, onMouseLeave: handleMouseLeave }}
+      />
+    </>
   );
 };
 

@@ -20,6 +20,9 @@ console.log("Sidebar Open:", isSidebarOpen);
 
         <Outlet />
       </main>
+       {/* --- ADD THIS DIV --- */}
+      {/* This is the target container for our flyout panel portal */}
+      <div id="flyout-portal-root"></div>
     </div>
   );
 };

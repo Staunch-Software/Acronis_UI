@@ -91,3 +91,24 @@ export const getPoliciesForExport = (tenantUuid, period) => {
   // Calls the new backend endpoint
   return apiClient.get(`/policies/tenant/${tenantUuid}/export`, { params });
 };
+
+/**
+ * Fetches a paginated and filtered list of REVOKED policies for a tenant.
+ * @param {string} tenantUuid The UUID of the tenant.
+ * @param {string} period The time filter ('7d', '14d', etc.).
+ * @param {number} page The current page number.
+ * @param {number} limit The number of items per page.
+ */
+export const getRevokedPoliciesForTenant = (tenantUuid, period, page, limit) => {
+  const params = {
+    skip: (page - 1) * limit,
+    limit: limit,
+  };
+
+  if (period && period !== 'all') {
+    params.period = period;
+  }
+
+  // Calls the new backend endpoint: /policies/tenant/{uuid}/revoked
+  return apiClient.get(`/policies/tenant/${tenantUuid}/revoked`, { params });
+};
