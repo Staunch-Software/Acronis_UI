@@ -112,3 +112,12 @@ export const getRevokedPoliciesForTenant = (tenantUuid, period, page, limit) => 
   // Calls the new backend endpoint: /policies/tenant/{uuid}/revoked
   return apiClient.get(`/policies/tenant/${tenantUuid}/revoked`, { params });
 };
+
+/**
+ * --- THIS IS THE NEW FUNCTION ---
+ * Triggers the fast, daily delta sync for policy applications.
+ * @param {object} payload - The request body, e.g., {} or { target_date: 'YYYY-MM-DD' }.
+ */
+export const syncPolicyUpdates = (payload) => {
+  return apiClient.post(`${SYNC_API_PREFIX}policy-updates`, payload);
+};

@@ -47,3 +47,14 @@ export const getAllAgents = () => {
 export const syncAgents = () => {
   return apiClient.post(`${SYNC_API_PREFIX}agents`);
 };
+
+/**
+ * Triggers the fast, daily delta sync for agent statuses.
+ * @param {object} payload - The request body, e.g., {} or { target_date: 'YYYY-MM-DD' }.
+ * @returns {Promise<axios.AxiosResponse>} The Axios response from the API.
+ */
+export const syncAgentUpdates = (payload) => {
+  // Pass the payload as the second argument to apiClient.post.
+  // This sends the JSON body to the FastAPI backend.
+  return apiClient.post(`${SYNC_API_PREFIX}agent-updates`, payload);
+};
