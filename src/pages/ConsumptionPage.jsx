@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo,useCallback } from "react";
 import styles from "./ConsumptionPage.module.css";
 import { getAllAgents } from "../services/agent_api.js";
 import { getAllTenants } from "../services/tenant_api.js";
@@ -26,74 +26,100 @@ const ConsumptionPage = () => {
   const [allAgents, setAllAgents] = useState([]);
   const [allTenants, setAllTenants] = useState([]);
   const [selectedTenant, setSelectedTenant] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [policyCount, setPolicyCount] = useState(0);
-  const [unassignedCount, setUnassignedCount] = useState(0);
+  const [enabledCount, setEnabledCount] = useState(0);
+  const [revokedCount, setRevokedCount] = useState(0);
   const [recentPolicies, setRecentPolicies] = useState([]);
+  const [dailySummary, setDailySummary] = useState({ applied: 0, revoked: 0 }); // 
   const [policyLoading, setPolicyLoading] = useState(true);
   const [unassignedLoading, setUnassignedLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncDate, setSyncDate] = useState("");
+
   const [policySyncStatus, setPolicySyncStatus] = useState({
     applied: 0,
     revoked: 0,
   });
   const [syncMessage, setSyncMessage] = useState("");
-
-  const fetchData = async () => {
+const fetchDashboardData = useCallback(async () => {
+    setPolicyLoading(true);
     try {
-      setLoading(true);
-      const [agentData, tenantData] = await Promise.all([
-        getAllAgents(),
-        getAllTenants(),
-      ]);
-      setAllAgents(agentData);
-      setAllTenants(tenantData);
+      const response = await getPolicyOverview(selectedTenant);
+      const { enabled_count, revoked_count, daily_summary, recent_policies } = response.data;
+      
+      setEnabledCount(enabled_count);
+      setRevokedCount(revoked_count);
+      setRecentPolicies(recent_policies);
+      setDailySummary(daily_summary || { applied: 0, revoked: 0 });
+
     } catch (err) {
-      console.error("Failed to load dashboard data:", err);
-      setError("Could not load dashboard data.");
+      console.error("Failed to load policy overview:", err);
+      setError("Could not load policy data.");
     } finally {
-      setLoading(false);
+      setPolicyLoading(false);
     }
-  };
+  }, [selectedTenant]);
 
   useEffect(() => {
-    fetchData();
+    const fetchInitialData = async () => {
+      try {
+        setInitialLoading(true); // Changed from setLoading
+        const [agentData, tenantData] = await Promise.all([ getAllAgents(), getAllTenants() ]);
+        setAllAgents(agentData);
+        setAllTenants(tenantData);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError("Could not load dashboard data.");
+      } finally {
+        setInitialLoading(false); // Changed from setLoading
+      }
+    };
+    fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    const fetchPolicyData = async () => {
-      setPolicyLoading(true);
-      try {
-        const response = await getPolicyOverview(selectedTenant);
-        const { total_count, recent_policies } = response.data;
-        setPolicyCount(total_count);
-        setRecentPolicies(recent_policies);
-      } catch (err) {
-        setPolicyCount(0);
-        setRecentPolicies([]);
-      } finally {
-        setPolicyLoading(false);
-      }
-    };
-    fetchPolicyData();
-  }, [selectedTenant]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
-  useEffect(() => {
-    const fetchUnassignedCount = async () => {
-      setUnassignedLoading(true);
-      try {
-        const response = await getUnassignedPolicyCount(selectedTenant);
-        setUnassignedCount(response.data.count);
-      } catch (err) {
-        setUnassignedCount(0);
-      } finally {
-        setUnassignedLoading(false);
-      }
-    };
-    fetchUnassignedCount();
-  }, [selectedTenant]);
+   useEffect(() => {
+    // Fetch policy data on load and when tenant changes
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+
+  // useEffect(() => {
+  //   const fetchPolicyData = async () => {
+  //     setPolicyLoading(true);
+  //     try {
+  //       const response = await getPolicyOverview(selectedTenant);
+  //       const { total_count, recent_policies } = response.data;
+  //       setPolicyCount(total_count);
+  //       setRecentPolicies(recent_policies);
+  //     } catch (err) {
+  //       setPolicyCount(0);
+  //       setRecentPolicies([]);
+  //     } finally {
+  //       setPolicyLoading(false);
+  //     }
+  //   };
+  //   fetchPolicyData();
+  // }, [selectedTenant]);
+
+  // useEffect(() => {
+  //   const fetchUnassignedCount = async () => {
+  //     setUnassignedLoading(true);
+  //     try {
+  //       const response = await getUnassignedPolicyCount(selectedTenant);
+  //       setUnassignedCount(response.data.count);
+  //     } catch (err) {
+  //       setUnassignedCount(0);
+  //     } finally {
+  //       setUnassignedLoading(false);
+  //     }
+  //   };
+  //   fetchUnassignedCount();
+  // }, [selectedTenant]);
 
   const filteredAgents = useMemo(() => {
     const activeAgents = allAgents.filter(
@@ -105,52 +131,26 @@ const ConsumptionPage = () => {
 
   const handleSyncClick = async () => {
     setIsSyncing(true);
-    setSyncMessage("Syncing policy changes...");
-    setPolicySyncStatus({ applied: 0, revoked: 0 });
-
-    const payload = syncDate ? { target_date: syncDate } : {};
-
+    setSyncMessage("Syncing daily activities...");
     try {
-      const response = await syncPolicyUpdates(payload);
-      const summary = response.data.summary;
+      const response = await syncPolicyUpdates(syncDate ? { target_date: syncDate } : {});
+      setSyncMessage(response.data.message || "Sync complete. Refreshing dashboard...");
+      
+      // After a successful sync, just refetch all the data.
+      // The backend will provide the updated totals and the updated daily trend.
+      await fetchDashboardData();
 
-      if (summary.error) {
-        throw new Error(summary.message || "Sync failed with a server error.");
-      }
-
-      setPolicySyncStatus({
-        applied: summary.applied || 0,
-        revoked: summary.revoked || 0,
-      });
-
-      setSyncMessage(summary.message || "Sync complete. Refreshing data...");
-
-      await fetchData();
     } catch (err) {
       console.error("Failed to trigger policy delta sync:", err);
-      const errorMessage =
-        err.response?.data?.detail || err.message || "Error: Sync failed.";
-      setSyncMessage(errorMessage);
+      const errorMessage = err.response?.data?.detail || err.message || "Error: Sync failed.";
+        setSyncMessage(err.response?.data?.detail || err.message || "Error: Sync failed.");
     } finally {
       setIsSyncing(false);
     }
   };
 
-  if (loading && allAgents.length === 0)
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Loading Consumption Dashboard...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className={styles.errorContainer}>
-        <div className={styles.errorIcon}>⚠️</div>
-        <p>{error}</p>
-      </div>
-    );
+ if (initialLoading) return ( <div className={styles.loadingContainer}><div className={styles.spinner}></div><p>Loading Dashboard...</p></div> );
+  if (error) return ( <div className={styles.errorContainer}><div className={styles.errorIcon}>⚠️</div><p>{error}</p></div> );
 
   return (
     <div className={styles.consumptionPage}>
@@ -228,29 +228,22 @@ const ConsumptionPage = () => {
           icon={<FaServer />}
           color="#10b981"
         />
-        <StatCard
+         <StatCard
           title="Applied Policies"
-          value={policyLoading ? "..." : policyCount}
-          subtext={
-            selectedTenant === "all"
-              ? "Total across all tenants"
-              : "Total for selected tenant"
-          }
+          value={policyLoading ? "..." : enabledCount}
+          subtext="Total enabled policies"
           icon={<FaFileContract />}
           color="#f59e0b"
-          changeAdded={policySyncStatus.applied}
+          changeAdded={dailySummary.applied}
+          changeRemoved={dailySummary.revoked}
         />
         <StatCard
           title="Revoked Consumption"
-          value={unassignedLoading ? "..." : unassignedCount}
-          subtext={
-            selectedTenant === "all"
-              ? "Total across all tenants"
-              : "Total for selected tenant"
-          }
+          value={policyLoading ? "..." : revokedCount}
+          subtext="Total disabled policies"
           icon={<FaBan />}
           color="#ef4444"
-          changeRemoved={policySyncStatus.revoked}
+          changeAdded={dailySummary.revoked}
         />
       </div>
 
@@ -287,6 +280,8 @@ const ConsumptionPage = () => {
                     <th>Policy Name</th>
                     <th>Applied To</th>
                     <th>Date Applied</th>
+                     <th>Created At</th>
+                     <th>policy status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -309,9 +304,23 @@ const ConsumptionPage = () => {
                           {policy.resource_name || "N/A"}
                         </span>
                       </td>
+                       <td>
+                <span className={styles.policyDate}>
+                  {policy.policy_applied_at 
+                    ? new Date(policy.policy_applied_at).toLocaleString() 
+                    : 'N/A'
+                  }
+                </span>
+              </td>
                       <td>
                         <span className={styles.policyDate}>
-                          {new Date(policy.policy_created_at).toLocaleString()}
+                          {new Date(policy.policy_created_at|| "N/A").toLocaleString()}
+                        </span>
+                      </td>
+                      
+                      <td>
+                        <span className={policy.policy_status === 'enabled' ? styles.statusEnabled : styles.statusRevoked}>
+                          {policy.policy_status}
                         </span>
                       </td>
                     </tr>

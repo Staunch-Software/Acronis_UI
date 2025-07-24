@@ -483,3 +483,22 @@
     font-size: 1.5rem;
   }
 }
+/* Add to ConsumptionPage.module.css */
+
+.statusEnabled,
+.statusRevoked {
+  padding: 4px 10px;
+  border-radius: 9999px; /* Pill shape */
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+}
+.statusEnabled {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669; /* Green */
+}
+.statusRevoked {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626; /* Red */
+}
