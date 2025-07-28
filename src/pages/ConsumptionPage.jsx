@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo,useCallback } from "react";
 import styles from "./ConsumptionPage.module.css";
-import { getAllAgents } from "../services/agent_api.js";
+import { getAllAgents, syncAgentUpdates } from "../services/agent_api.js"; 
 import { getAllTenants } from "../services/tenant_api.js";
 import {
   getPolicyOverview,
@@ -129,25 +129,46 @@ const fetchDashboardData = useCallback(async () => {
     return activeAgents.filter((agent) => agent.tenant_id === selectedTenant);
   }, [allAgents, selectedTenant]);
 
-  const handleSyncClick = async () => {
+   const handleSyncClick = async () => {
     setIsSyncing(true);
-    setSyncMessage("Syncing daily activities...");
+    setSyncMessage("Syncing daily agent and policy changes...");
+    const payload = syncDate ? { target_date: syncDate } : {};
+
     try {
-      const response = await syncPolicyUpdates(syncDate ? { target_date: syncDate } : {});
-      setSyncMessage(response.data.message || "Sync complete. Refreshing dashboard...");
+      // --- STEP A: Start both sync operations at the same time ---
+      const agentSyncPromise = syncAgentUpdates(payload);
+      const policySyncPromise = syncPolicyUpdates(payload);
+
+      // --- STEP B: Wait for BOTH promises to complete ---
+      // Promise.all will run them in parallel. It will only continue once
+      // both API calls have successfully finished. If either one fails,
+      // it will immediately jump to the catch block.
+      const [agentResponse, policyResponse] = await Promise.all([
+        agentSyncPromise,
+        policySyncPromise,
+      ]);
+
+      console.log("Agent Sync Message:", agentResponse.data.message);
+      console.log("Policy Sync Message:", policyResponse.data.message);
       
-      // After a successful sync, just refetch all the data.
-      // The backend will provide the updated totals and the updated daily trend.
+      // --- STEP C: Refresh the entire dashboard ---
+      setSyncMessage("Sync complete. Refreshing dashboard...");
       await fetchDashboardData();
+      
+      setSyncMessage("Dashboard refreshed with the latest data.");
+      // Clear the message after a few seconds
+      setTimeout(() => setSyncMessage(""), 4000);
 
     } catch (err) {
-      console.error("Failed to trigger policy delta sync:", err);
-      const errorMessage = err.response?.data?.detail || err.message || "Error: Sync failed.";
-        setSyncMessage(err.response?.data?.detail || err.message || "Error: Sync failed.");
+      console.error("Failed to trigger parallel delta sync:", err);
+      // This will catch an error from EITHER of the sync calls
+      const errorMessage = err.response?.data?.detail || err.message || "Error: A step in the sync process failed.";
+      setSyncMessage(errorMessage);
     } finally {
       setIsSyncing(false);
     }
   };
+  
 
  if (initialLoading) return ( <div className={styles.loadingContainer}><div className={styles.spinner}></div><p>Loading Dashboard...</p></div> );
   if (error) return ( <div className={styles.errorContainer}><div className={styles.errorIcon}>⚠️</div><p>{error}</p></div> );
@@ -197,7 +218,7 @@ const fetchDashboardData = useCallback(async () => {
                   isSyncing ? styles.syncIconSpinning : styles.syncIcon
                 }
               />
-              {isSyncing ? "Syncing..." : "Sync Policy Changes"}
+              {isSyncing ? "Syncing..." : "Sync Daily Changes"}
             </button>
           </div>
         </div>
