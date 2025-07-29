@@ -58,3 +58,11 @@ export const syncAgentUpdates = (payload) => {
   // This sends the JSON body to the FastAPI backend.
   return apiClient.post(`${SYNC_API_PREFIX}agent-updates`, payload);
 };
+export const getAgentOverview = (tenantUuid) => {
+  const params = {};
+  if (tenantUuid && tenantUuid !== 'all') {
+    params.tenant_uuid = tenantUuid;
+  }
+  // This calls the new GET /agents/overview endpoint
+  return apiClient.get(`${AGENT_API_PREFIX}overview`, { params });
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo,useCallback } from "react";
 import styles from "./ConsumptionPage.module.css";
-import { getAllAgents, syncAgentUpdates } from "../services/agent_api.js"; 
+import { getAllAgents, syncAgentUpdates, getAgentOverview } from "../services/agent_api.js"; 
 import { getAllTenants } from "../services/tenant_api.js";
 import {
   getPolicyOverview,
@@ -36,11 +36,27 @@ const ConsumptionPage = () => {
   const [unassignedLoading, setUnassignedLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncDate, setSyncDate] = useState("");
-
+  const [agentEnabledCount, setAgentEnabledCount] = useState(0);
+  const [agentDailySummary, setAgentDailySummary] = useState({ added: 0, disabled: 0 });
+  const [agentLoading, setAgentLoading] = useState(true);
   const [policySyncStatus, setPolicySyncStatus] = useState({
     applied: 0,
     revoked: 0,
   });
+const fetchAgentDashboardData = useCallback(async () => {
+    setAgentLoading(true);
+    try {
+      const response = await getAgentOverview(selectedTenant);
+      const { enabled_count, daily_summary } = response.data;
+      setAgentEnabledCount(enabled_count);
+      setAgentDailySummary(daily_summary || { added: 0, disabled: 0 });
+    } catch (err) {
+      console.error("Failed to load agent overview:", err);
+      // Don't set the main error, just fail gracefully for this card
+    } finally {
+      setAgentLoading(false);
+    }
+  }, [selectedTenant]);
   const [syncMessage, setSyncMessage] = useState("");
 const fetchDashboardData = useCallback(async () => {
     setPolicyLoading(true);
@@ -83,9 +99,10 @@ const fetchDashboardData = useCallback(async () => {
   // }, []);
 
    useEffect(() => {
-    // Fetch policy data on load and when tenant changes
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    // This fetches BOTH overviews when the tenant filter changes
+    fetchDashboardData(); // For policies
+    fetchAgentDashboardData(); // For agents
+  }, [fetchDashboardData, fetchAgentDashboardData]);
 
 
   // useEffect(() => {
@@ -128,7 +145,10 @@ const fetchDashboardData = useCallback(async () => {
     if (selectedTenant === "all") return activeAgents;
     return activeAgents.filter((agent) => agent.tenant_id === selectedTenant);
   }, [allAgents, selectedTenant]);
-
+  const protectedAgentCount = useMemo(() => {
+    
+    return agentEnabledCount;
+  }, [agentEnabledCount]);
    const handleSyncClick = async () => {
     setIsSyncing(true);
     setSyncMessage("Syncing daily agent and policy changes...");
@@ -240,15 +260,14 @@ const fetchDashboardData = useCallback(async () => {
         />
         <StatCard
           title="Protected Agents"
-          value={filteredAgents.length}
-          subtext={
-            selectedTenant === "all"
-              ? "Across all tenants"
-              : "For selected tenant"
-          }
+          value={agentLoading ? "..." : agentEnabledCount}
+          subtext={selectedTenant === "all" ? "Across all tenants" : "For selected tenant"}
           icon={<FaServer />}
           color="#10b981"
+          changeAdded={agentDailySummary.added}
+          changeRemoved={agentDailySummary.disabled}
         />
+
          <StatCard
           title="Applied Policies"
           value={policyLoading ? "..." : enabledCount}
