@@ -173,7 +173,10 @@ const fetchDashboardData = useCallback(async () => {
       
       // --- STEP C: Refresh the entire dashboard ---
       setSyncMessage("Sync complete. Refreshing dashboard...");
-      await fetchDashboardData();
+       await Promise.all([
+      fetchDashboardData(),      // Refreshes policy data
+      fetchAgentDashboardData()  // Refreshes agent data
+    ]);
       
       setSyncMessage("Dashboard refreshed with the latest data.");
       // Clear the message after a few seconds
