@@ -149,48 +149,39 @@ const fetchDashboardData = useCallback(async () => {
     
     return agentEnabledCount;
   }, [agentEnabledCount]);
-   const handleSyncClick = async () => {
-    setIsSyncing(true);
-    setSyncMessage("Syncing daily agent and policy changes...");
-    const payload = syncDate ? { target_date: syncDate } : {};
+  const handleSyncClick = async () => {
+  setIsSyncing(true);
+  const payload = syncDate ? { target_date: syncDate } : {};
 
-    try {
-      // --- STEP A: Start both sync operations at the same time ---
-      const agentSyncPromise = syncAgentUpdates(payload);
-      const policySyncPromise = syncPolicyUpdates(payload);
+  try {
+    // --- STEP 1: Run the AGENT sync FIRST and wait for it to complete. ---
+    setSyncMessage("Step 1 of 2: Syncing daily agent changes...");
+    const agentResponse = await syncAgentUpdates(payload);
+    console.log("Agent Sync Message:", agentResponse.data.message);
+    
+    // --- STEP 2: Now that agents are in the DB, run the POLICY sync. ---
+    setSyncMessage("Step 2 of 2: Syncing daily policy changes...");
+    const policyResponse = await syncPolicyUpdates(payload);
+    console.log("Policy Sync Message:", policyResponse.data.message);
 
-      // --- STEP B: Wait for BOTH promises to complete ---
-      // Promise.all will run them in parallel. It will only continue once
-      // both API calls have successfully finished. If either one fails,
-      // it will immediately jump to the catch block.
-      const [agentResponse, policyResponse] = await Promise.all([
-        agentSyncPromise,
-        policySyncPromise,
-      ]);
-
-      console.log("Agent Sync Message:", agentResponse.data.message);
-      console.log("Policy Sync Message:", policyResponse.data.message);
-      
-      // --- STEP C: Refresh the entire dashboard ---
-      setSyncMessage("Sync complete. Refreshing dashboard...");
-       await Promise.all([
+    // --- STEP 3: Refresh the entire dashboard. ---
+    setSyncMessage("Sync complete. Refreshing dashboard...");
+    await Promise.all([
       fetchDashboardData(),      // Refreshes policy data
       fetchAgentDashboardData()  // Refreshes agent data
     ]);
-      
-      setSyncMessage("Dashboard refreshed with the latest data.");
-      // Clear the message after a few seconds
-      setTimeout(() => setSyncMessage(""), 4000);
+    
+    setSyncMessage("Dashboard refreshed with the latest data.");
+    setTimeout(() => setSyncMessage(""), 4000);
 
-    } catch (err) {
-      console.error("Failed to trigger parallel delta sync:", err);
-      // This will catch an error from EITHER of the sync calls
-      const errorMessage = err.response?.data?.detail || err.message || "Error: A step in the sync process failed.";
-      setSyncMessage(errorMessage);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+  } catch (err) {
+    console.error("Failed to trigger sequential delta sync:", err);
+    const errorMessage = err.response?.data?.detail || err.message || "Error: A step in the sync process failed.";
+    setSyncMessage(errorMessage);
+  } finally {
+    setIsSyncing(false);
+  }
+};
   
 
  if (initialLoading) return ( <div className={styles.loadingContainer}><div className={styles.spinner}></div><p>Loading Dashboard...</p></div> );
